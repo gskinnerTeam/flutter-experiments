@@ -4,6 +4,8 @@ void main() {
   runApp(MyApp());
 }
 
+PageTypes _toPageType(String key) => PageTypes.values.firstWhere((v) => "$v" == key, orElse: () => null);
+
 enum PageTypes {
   Page1,
   Page2,
@@ -44,17 +46,20 @@ NavModel _navModel = NavModel();
 class AppInformationParser extends RouteInformationParser<NavModel> {
   @override
   Future<NavModel> parseRouteInformation(RouteInformation routeInformation) async {
+    NavModel result = NavModel();
+    // If we have some deeplink location, parse it
     if (routeInformation.location != null) {
       List<String> keys = routeInformation.location.split("/");
-      print(keys[0]);
+      //Assume the first key is our page type
+      if (keys.length > 0) result.currentPage = _toPageType(keys[0]);
     }
-    return NavModel()..currentPage = PageTypes.Page3;
+    return result;
   }
 
   @override
-  RouteInformation restoreRouteInformation(NavModel model) => RouteInformation(
-        location: "/${model.currentPage ?? ""}",
-      );
+  RouteInformation restoreRouteInformation(NavModel model) {
+    return RouteInformation(location: "${model.currentPage ?? ""}");
+  }
 }
 
 class AppRouterDelegate extends RouterDelegate<NavModel> with ChangeNotifier, PopNavigatorRouterDelegateMixin {
