@@ -41,20 +41,56 @@ class NavModel extends ChangeNotifier {
 
 NavModel _navModel = NavModel();
 
+class AppInformationParser extends RouteInformationParser<NavModel> {
+  @override
+  Future<NavModel> parseRouteInformation(RouteInformation routeInformation) async {
+    if (routeInformation.location != null) {
+      List<String> keys = routeInformation.location.split("/");
+      print(keys[0]);
+    }
+    return NavModel()..currentPage = PageTypes.Page3;
+  }
+
+  @override
+  RouteInformation restoreRouteInformation(NavModel model) => RouteInformation(
+        location: "/${model.currentPage ?? ""}",
+      );
+}
+
+class AppRouterDelegate extends RouterDelegate<NavModel> with ChangeNotifier, PopNavigatorRouterDelegateMixin {
+  AppRouterDelegate(this.model) {
+    this.model.addListener(notifyListeners);
+  }
+  final NavModel model;
+
+  NavModel get currentConfiguration => model;
+
+  @override
+  GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
+  GlobalKey<NavigatorState> _navigatorKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: _navigatorKey,
+      pages: model.buildPages(),
+      onPopPage: model.handlePopPage,
+    );
+  }
+
+  @override
+  Future<void> setNewRoutePath(NavModel model) async {
+    this.model.currentPage = model.currentPage;
+  }
+}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      builder: (_, __) {
-        return AnimatedBuilder(
-          animation: _navModel,
-          builder: (_, __) => Navigator(
-            pages: _navModel.buildPages(),
-            onPopPage: _navModel.handlePopPage,
-          ),
-        );
-      },
+    return MaterialApp.router(
+      routeInformationParser: AppInformationParser(),
+      routerDelegate: AppRouterDelegate(_navModel),
     );
   }
 }
