@@ -11,10 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.1
-  
+  random_color:
+  statsfl:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   peanut: ^3.5.1
 flutter:
   uses-material-design: true
+
+# flutter run -d chrome --dart-define=FLUTTER_WEB_USE_SKIA=true

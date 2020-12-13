@@ -1,154 +1,189 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:statsfl/statsfl.dart';
+import 'package:flutter_experiments/optimized_drag_stack/optimized_drag_stack.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(StatsFl(child: ExperimentsApp()));
 }
 
-PageTypes _toPageType(String key) => PageTypes.values.firstWhere((v) => "$v" == key, orElse: () => null);
-enum PageTypes {
-  Page1,
-  Page2,
-  Page3,
-}
-
-class AppInformationParser extends RouteInformationParser<NavModel> {
-  @override
-  Future<NavModel> parseRouteInformation(RouteInformation routeInformation) async {
-    NavModel result = NavModel();
-    // If we have some deeplink location, parse it
-    if (routeInformation.location != null) {
-      List<String> keys = routeInformation.location.split("/");
-      //Assume the first key is our page type
-      if (keys.length > 0) result.currentPage = _toPageType(keys[0]);
-    }
-    return result;
-  }
-
-  @override
-  RouteInformation restoreRouteInformation(NavModel model) {
-    return RouteInformation(location: "${model.currentPage ?? "/"}");
-  }
-}
-
-class AppRouterDelegate extends RouterDelegate<NavModel> with ChangeNotifier, PopNavigatorRouterDelegateMixin {
-  AppRouterDelegate(this.model) {
-    this.model.addListener(notifyListeners);
-  }
-  final NavModel model;
-
-  NavModel get currentConfiguration => model;
-
-  @override
-  GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
-  GlobalKey<NavigatorState> _navigatorKey = GlobalKey();
-
+class ExperimentsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Navigator(
-        key: _navigatorKey,
-        pages: model.currentPageStack(),
-        onPopPage: model.handlePopPage,
-      ),
+    return MaterialApp.router(
+      routerDelegate: _appRouterDelegate,
+      routeInformationParser: _appRouteParser,
     );
-  }
-
-  @override
-  Future<void> setNewRoutePath(NavModel model) async {
-    this.model.currentPage = model.currentPage;
   }
 }
 
 class NavModel extends ChangeNotifier {
-  PageTypes _currentPage;
-
-  PageTypes get currentPage => _currentPage;
-  set currentPage(PageTypes value) {
-    _currentPage = value;
+  String _currentExperiment;
+  String get currentExperiment => _currentExperiment;
+  set currentExperiment(String currentExperiment) {
+    _currentExperiment = currentExperiment;
     notifyListeners();
   }
 
-  bool handlePopPage(Route<dynamic> route, dynamic result) {
-    bool result = false;
-    if (route.didPop(result)) {
-      currentPage = null;
-      result = true;
+  bool navigateUp() {
+    if (currentExperiment != null) {
+      currentExperiment = null;
+      return true;
     }
-    return result;
+    return false;
   }
 
-  List<Page> currentPageStack() {
-    return [
-      _Home(),
-      if (currentPage == PageTypes.Page1) ...{
-        _Page1(),
-      } else if (currentPage == PageTypes.Page2) ...{
-        _Page2(),
-      } else if (currentPage == PageTypes.Page3) ...{
-        _Page3(),
-      },
-    ].map((widget) => MaterialPage(child: widget)).toList();
+  Map<String, Widget Function()> experimentsByName = {
+    "OptimizedDragAndDrop": () => OptimizedDragStack(),
+  };
+
+  Widget buildCurrentExperiment() {
+    if (experimentsByName.containsKey(currentExperiment) == false) return null;
+    return experimentsByName[currentExperiment].call();
+  }
+
+  String toLink() {
+    return currentExperiment ?? "/";
+  }
+
+  void copyFromLink(String location) {
+    List<String> segments = location.split("/");
+    if (segments.length > 0) {
+      // Validate the experimentName since the user can type anything into the browser.
+      if (experimentsByName.keys.contains(segments[0])) {
+        currentExperiment = segments[0];
+      }
+    }
   }
 }
 
 NavModel _navModel = NavModel();
+AppRouterDelegate _appRouterDelegate = AppRouterDelegate(_navModel);
+AppRouteParser _appRouteParser = AppRouteParser(_navModel);
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+/// ////////////////////////////////////////////////
+/// TABBED SCAFFOLD VIEW
+/// ///////////////////////////////////////////////
+class TabbedScaffold extends StatelessWidget {
+  const TabbedScaffold({Key key, this.navModel}) : super(key: key);
+  final NavModel navModel;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routeInformationParser: AppInformationParser(),
-      routerDelegate: AppRouterDelegate(_navModel),
+    return Scaffold(
+      body: AnimatedSwitcher(
+        duration: Duration(milliseconds: 200),
+        child: navModel.currentExperiment == null
+            // 'Home' View
+            ? Container(
+                alignment: Alignment.center,
+                child: _MainMenu(navModel),
+              )
+            : Row(
+                children: [
+                  // Side Menu
+                  Column(
+                    children: [
+                      SizedBox(height: 50),
+                      _MenuBtn(label: "HOME", onPressed: (_) => navModel.currentExperiment = null),
+                      _MainMenu(_navModel)
+                    ],
+                  ),
+                  // Page Area
+                  Flexible(
+                    child: AnimatedSwitcher(
+                      duration: Duration(milliseconds: 200),
+                      // Build the current experiment according to nav-state
+                      child: navModel.buildCurrentExperiment(),
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
 
 class _MainMenu extends StatelessWidget {
+  const _MainMenu(this.navModel, {Key key}) : super(key: key);
+  final NavModel navModel;
+  void selectExperiment(String value) => navModel.currentExperiment = value;
   @override
-  Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FlatButton(child: Text("POP"), onPressed: () => Navigator.of(context).pop()),
-          FlatButton(child: Text("PAGE1"), onPressed: () => _navModel.currentPage = PageTypes.Page1),
-          FlatButton(child: Text("PAGE2"), onPressed: () => _navModel.currentPage = PageTypes.Page2),
-          FlatButton(child: Text("PAGE3"), onPressed: () => _navModel.currentPage = PageTypes.Page3),
-          FlatButton(
-              child: Text("PUSH ROUTE"),
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                  return Container(child: _MainMenu());
-                }));
-              }),
-          FlatButton(child: Text("DIALOG"), onPressed: () => showDialog(context: context, builder: (_) => _MyDialog())),
-          FlatButton(child: Text("GO HOME"), onPressed: () => _navModel.currentPage = null),
-        ],
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Turn the list of experiments in the model, to menu buttons
+        ...navModel.experimentsByName.keys.map((name) => _MenuBtn(
+              label: name,
+              isSelected: name == navModel.currentExperiment,
+              onPressed: selectExperiment,
+            ))
+      ],
+    );
+  }
+}
+
+class _MenuBtn extends StatelessWidget {
+  const _MenuBtn({Key key, this.label, this.isSelected = false, this.onPressed}) : super(key: key);
+  final String label;
+  final bool isSelected;
+  final void Function(String) onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    TextStyle style = TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal);
+
+    return OutlineButton(
+      onPressed: () => onPressed(label),
+      child: SizedBox(
+        width: 200,
+        height: 50,
+        child: Center(child: Text(label, style: style)),
+      ),
+    );
+  }
+}
+
+/// ////////////////////////////////////////////////
+/// ROUTER DELEGATE & PARSER
+
+class AppRouterDelegate extends RouterDelegate<NavModel> with ChangeNotifier {
+  AppRouterDelegate(this.navModel) {
+    // Accept the state as a param, and listen to it for changes. This lets us rebuild anytime the NavModel changes.
+    this.navModel.addListener(notifyListeners);
+  }
+  final NavModel navModel;
+
+  @override
+  // Allows Router to get the current state of the app when it needs
+  NavModel get currentConfiguration => navModel;
+
+  @override
+  Widget build(BuildContext context) => Navigator(
+        // The main scaffold will not support pop() usage directly, so we'll just return a false here.
+        onPopPage: (route, result) => false,
+        // Viewstack has only one view, TabbedScaffold, it will build it's own view internally.
+        pages: [MaterialPage(child: TabbedScaffold(navModel: navModel))],
       );
+
+  @override
+  // Android back btn goes up in the navigation:
+  Future<bool> popRoute() async => navModel.navigateUp();
+
+  @override
+  Future<void> setNewRoutePath(newNav) async => navModel.copyFromLink(newNav.toLink());
 }
 
-class _MyDialog extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Container(
-      padding: EdgeInsets.all(8),
-      child: FlatButton(child: Text("Close"), onPressed: () => Navigator.of(context).pop()));
-}
+class AppRouteParser extends RouteInformationParser<NavModel> {
+  AppRouteParser(this.navModel);
+  final NavModel navModel;
 
-class _Home extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Column(children: [Text("HOME", style: TextStyle(fontSize: 72)), _MainMenu()]);
-}
+  RouteInformation restoreRouteInformation(NavModel model) => RouteInformation(location: model.toLink());
 
-class _Page1 extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Column(children: [Text("PAGE 1", style: TextStyle(fontSize: 72)), _MainMenu()]);
-}
-
-class _Page2 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Column(children: [Text("PAGE 2", style: TextStyle(fontSize: 72)), _MainMenu()]);
-}
-
-class _Page3 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Column(children: [Text("PAGE 3", style: TextStyle(fontSize: 72)), _MainMenu()]);
+  Future<NavModel> parseRouteInformation(RouteInformation routeInformation) async {
+    return navModel..copyFromLink(routeInformation.location);
+  }
 }
