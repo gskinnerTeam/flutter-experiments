@@ -7,6 +7,7 @@ void main() {
   runApp(StatsFl(child: ExperimentsApp()));
 }
 
+// Main App
 class ExperimentsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,12 @@ class ExperimentsApp extends StatelessWidget {
   }
 }
 
+// A map of view-builders by name. Used to build the main menu, and render each content area.
+Map<String, Widget Function()> experimentsByName = {
+  "OptimizedDragAndDrop": () => OptimizedDragStack(),
+};
+
+// A model that holds state regarding the app navigation, and API for interaction with RouterDelegate and RouteParser
 class NavModel extends ChangeNotifier {
   String _currentExperiment;
   String get currentExperiment => _currentExperiment;
@@ -25,6 +32,7 @@ class NavModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Called by RouterDelegate when AndroidBack btn is pressed
   bool navigateUp() {
     if (currentExperiment != null) {
       currentExperiment = null;
@@ -33,19 +41,18 @@ class NavModel extends ChangeNotifier {
     return false;
   }
 
-  Map<String, Widget Function()> experimentsByName = {
-    "OptimizedDragAndDrop": () => OptimizedDragStack(),
-  };
-
+  // Builds an experiment according to currentExperiment value
   Widget buildCurrentExperiment() {
     if (experimentsByName.containsKey(currentExperiment) == false) return null;
     return experimentsByName[currentExperiment].call();
   }
 
+  // Called by RouteParser, when the browser wants the link
   String toLink() {
     return currentExperiment ?? "/";
   }
 
+  // Called by Router, when it has a new location/deeplink
   void copyFromLink(String location) {
     List<String> segments = location.split("/");
     if (segments.length > 0) {
