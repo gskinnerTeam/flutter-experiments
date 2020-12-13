@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:random_color/random_color.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 // Create a list of random boxes
 double rnd([double value = 1]) => Random().nextDouble() * value;
@@ -24,7 +25,7 @@ class OptimizedDragStack extends StatefulWidget {
 class _OptimizedDragStackState extends State<OptimizedDragStack> {
   bool _useImages = true;
   bool _optimizeBuilds = true;
-  double _boxCount = 200;
+  int _boxCount = 200;
 
   @override
   void initState() {
@@ -73,35 +74,43 @@ class _OptimizedDragStackState extends State<OptimizedDragStack> {
             Align(
               alignment: Alignment.topCenter,
               child: Container(
-                  height: 100,
                   color: Colors.grey.shade200,
-                  padding: EdgeInsets.all(20),
-                  child: Row(
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text("Use Images: "),
-                      Checkbox(
-                        tristate: false,
-                        value: _useImages,
-                        onChanged: (value) => setState(() => _useImages = value),
+                      Row(
+                        children: [
+                          Text("Use Images: "),
+                          Checkbox(
+                            tristate: false,
+                            value: _useImages,
+                            onChanged: (value) => setState(() => _useImages = value),
+                          ),
+                          SizedBox(width: 50),
+                          Text("Optimize  child builds: "),
+                          Checkbox(
+                            tristate: false,
+                            value: _optimizeBuilds,
+                            onChanged: (value) => setState(() => _optimizeBuilds = value),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 50),
-                      Text("Optimize  child builds: "),
-                      Checkbox(
-                        tristate: false,
-                        value: _optimizeBuilds,
-                        onChanged: (value) => setState(() => _optimizeBuilds = value),
-                      ),
-                      SizedBox(width: 50),
-                      Slider(
-                        min: 1,
-                        max: 100,
-                        value: _boxCount / 50,
-                        onChanged: (value) => setState(() {
-                          _boxCount = value * 50;
-                          generateBoxes(_boxCount.round());
+                      SfSlider(
+                        min: 100.0,
+                        max: 2500.0,
+                        value: _boxCount.toDouble(),
+                        stepSize: 50,
+                        interval: 100,
+                        showTicks: true,
+                        showLabels: true,
+                        showTooltip: true,
+                        minorTicksPerInterval: 1,
+                        onChanged: (dynamic value) => setState(() {
+                          _boxCount = (value as double).toInt();
+                          generateBoxes(_boxCount);
                         }),
                       ),
-                      Text("BoxCount(${_boxCount.round()})"),
                     ],
                   )),
             ),

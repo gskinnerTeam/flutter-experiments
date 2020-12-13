@@ -11,8 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.1
+  url_launcher: ^5.7.10
+  peanut:
   random_color:
   statsfl:
+  syncfusion_flutter_sliders: ^18.3.53-beta
 
 dev_dependencies:
   flutter_test:

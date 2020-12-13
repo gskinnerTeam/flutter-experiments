@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_experiments/context_menu/context_menu_experiment.dart';
 import 'package:statsfl/statsfl.dart';
 import 'package:flutter_experiments/optimized_drag_stack/optimized_drag_stack.dart';
 
@@ -18,14 +19,25 @@ class ExperimentsApp extends StatelessWidget {
   }
 }
 
-// A map of view-builders by name. Used to build the main menu, and render each content area.
-Map<String, Widget Function()> experimentsByName = {
-  "OptimizedDragAndDrop": () => OptimizedDragStack(),
-};
+abstract class RouterModel extends ChangeNotifier {
+  bool navigateUp();
+  void copyFromLink(String location);
+  String toLink();
+
+  Widget buildNavigator(BuildContext context);
+}
 
 // A model that holds state regarding the app navigation, and API for interaction with RouterDelegate and RouteParser
-class NavModel extends ChangeNotifier {
+class NavModel extends RouterModel {
   String _currentExperiment;
+
+  // A map of view-builders by name. Used to build the main menu, and render each content area.
+  Map<String, Widget Function()> experimentsByName = {
+    "OptimizedDragAndDrop": () => OptimizedDragStack(),
+    "ContextMenu": () => ContextMenuTestApp(),
+  };
+  List<String> get experimentNames => experimentsByName.keys.toList();
+
   String get currentExperiment => _currentExperiment;
   set currentExperiment(String currentExperiment) {
     _currentExperiment = currentExperiment;
@@ -62,6 +74,18 @@ class NavModel extends ChangeNotifier {
       }
     }
   }
+
+  @override
+  Widget buildNavigator(BuildContext context) {
+    return Navigator(
+      // The main scaffold will not support pop() usage directly, so we'll just return a false here.
+      onPopPage: (route, result) => false,
+      // Viewstack has only one view, TabbedScaffold, it will build it's own view internally.
+      pages: [
+        MaterialPage(child: TabbedScaffold(navModel: this)),
+      ],
+    );
+  }
 }
 
 NavModel _navModel = NavModel();
@@ -84,7 +108,16 @@ class TabbedScaffold extends StatelessWidget {
             // 'Home' View
             ? Container(
                 alignment: Alignment.center,
-                child: _MainMenu(navModel),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Flutter Experiments", style: TextStyle(fontSize: 32)),
+                    // TODO Add hyperlink and context-menu here
+                    Text("by gskinner.com"),
+                    SizedBox(height: 20),
+                    _MainMenu(navModel),
+                  ],
+                ),
               )
             : Row(
                 children: [
@@ -121,7 +154,7 @@ class _MainMenu extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Turn the list of experiments in the model, to menu buttons
-        ...navModel.experimentsByName.keys.map((name) => _MenuBtn(
+        ...navModel.experimentNames.map((name) => _MenuBtn(
               label: name,
               isSelected: name == navModel.currentExperiment,
               onPressed: selectExperiment,
@@ -155,42 +188,37 @@ class _MenuBtn extends StatelessWidget {
 /// ////////////////////////////////////////////////
 /// ROUTER DELEGATE & PARSER
 
-class AppRouterDelegate extends RouterDelegate<NavModel> with ChangeNotifier {
-  AppRouterDelegate(this.navModel) {
-    // Accept the state as a param, and listen to it for changes. This lets us rebuild anytime the NavModel changes.
-    this.navModel.addListener(notifyListeners);
+class AppRouterDelegate extends RouterDelegate<RouterModel> with ChangeNotifier {
+  AppRouterDelegate(this.model) {
+    // Accept the model as a param, and listen to it for changes. Rebuild anytime model changes.
+    this.model.addListener(notifyListeners);
   }
-  final NavModel navModel;
+  final RouterModel model;
 
   @override
   // Allows Router to get the current state of the app when it needs
-  NavModel get currentConfiguration => navModel;
+  RouterModel get currentConfiguration => model;
 
   @override
-  Widget build(BuildContext context) => Navigator(
-        // The main scaffold will not support pop() usage directly, so we'll just return a false here.
-        onPopPage: (route, result) => false,
-        // Viewstack has only one view, TabbedScaffold, it will build it's own view internally.
-        pages: [MaterialPage(child: TabbedScaffold(navModel: navModel))],
-      );
+  Widget build(BuildContext context) => model.buildNavigator(context);
 
   @override
   // Android back btn goes up in the navigation:
-  Future<bool> popRoute() async => navModel.navigateUp();
+  Future<bool> popRoute() async => model.navigateUp();
 
   @override
-  Future<void> setNewRoutePath(newNav) async => navModel.copyFromLink(newNav.toLink());
+  Future<void> setNewRoutePath(newNav) async => model.copyFromLink(newNav.toLink());
 }
 
-class AppRouteParser extends RouteInformationParser<NavModel> {
-  AppRouteParser(this.navModel);
-  final NavModel navModel;
+class AppRouteParser extends RouteInformationParser<RouterModel> {
+  AppRouteParser(this.model);
+  final RouterModel model;
 
   @override
-  RouteInformation restoreRouteInformation(NavModel model) => RouteInformation(location: model.toLink());
+  RouteInformation restoreRouteInformation(RouterModel model) => RouteInformation(location: model.toLink());
 
   @override
-  Future<NavModel> parseRouteInformation(RouteInformation routeInformation) async {
-    return navModel..copyFromLink(routeInformation.location);
+  Future<RouterModel> parseRouteInformation(RouteInformation routeInformation) async {
+    return model..copyFromLink(routeInformation.location);
   }
 }
