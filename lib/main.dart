@@ -4,6 +4,8 @@ import 'package:flutter_experiments/context_menu/context_menu_experiment.dart';
 import 'package:statsfl/statsfl.dart';
 import 'package:flutter_experiments/optimized_drag_stack/optimized_drag_stack.dart';
 
+import 'nav_examples/imperative_nav_tests.dart';
+
 void main() {
   runApp(StatsFl(child: ExperimentsApp()));
 }
@@ -35,6 +37,7 @@ class NavModel extends RouterModel {
   Map<String, Widget Function()> experimentsByName = {
     "OptimizedDragAndDrop": () => OptimizedDragStack(),
     "ContextMenu": () => ContextMenuTestApp(),
+    "Nav Tests": () => ImperativeNavTests(),
   };
   List<String> get experimentNames => experimentsByName.keys.toList();
 
