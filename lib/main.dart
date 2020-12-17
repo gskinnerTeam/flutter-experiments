@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_experiments/context_menu/context_menu_experiment.dart';
+import 'package:flutter_experiments/travel_card_opening/opening_cards_app.dart';
 import 'package:statsfl/statsfl.dart';
 import 'package:flutter_experiments/optimized_drag_stack/optimized_drag_stack.dart';
 
+import 'keyboard_listener/keyboard_listener_app.dart';
 import 'nav_examples/imperative_nav_tests.dart';
 
 void main() {
@@ -38,6 +40,8 @@ class NavModel extends RouterModel {
     "OptimizedDragAndDrop": () => OptimizedDragStack(),
     "ContextMenu ": () => ContextMenuTestApp(),
     "Nav Tests": () => ImperativeNavTests(),
+    "keyboard Listeners": () => KeyboardListenerApp(),
+    //"Opening Cards": () => OpeningTravelCardsApp(),
   };
   List<String> get experimentNames => experimentsByName.keys.toList();
 
