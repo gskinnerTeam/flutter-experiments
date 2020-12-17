@@ -39,7 +39,7 @@ class NavModel extends RouterModel {
   Map<String, Widget Function()> experimentsByName = {
     "Optimized Drag And Drop": () => OptimizedDragStack(),
     "Context Menu ": () => ContextMenuTestApp(),
-    "Nav Tests ": () => ImperativeNavTests(),
+    "Nav Tests": () => ImperativeNavTests(),
     "keyboard Listeners": () => KeyboardListenerApp(),
     //"Opening Cards": () => OpeningTravelCardsApp(),
   };
