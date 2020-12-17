@@ -37,10 +37,10 @@ class NavModel extends RouterModel {
 
   // A map of view-builders by name. Used to build the main menu, and render each content area.
   Map<String, Widget Function()> experimentsByName = {
-    "Optimized Drag And Drop": () => OptimizedDragStack(),
-    "Context Menu ": () => ContextMenuTestApp(),
-    "Nav Tests": () => ImperativeNavTests(),
-    "keyboard Listeners": () => KeyboardListenerApp(),
+    "OptimizedDragAndDrop": () => OptimizedDragStack(),
+    "ContextMenu ": () => ContextMenuTestApp(),
+    "NavTests": () => ImperativeNavTests(),
+    "keyboardListeners": () => KeyboardListenerApp(),
     //"Opening Cards": () => OpeningTravelCardsApp(),
   };
   List<String> get experimentNames => experimentsByName.keys.toList();

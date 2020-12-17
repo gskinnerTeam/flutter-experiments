@@ -23,9 +23,9 @@ class OptimizedDragStack extends StatefulWidget {
 }
 
 class _OptimizedDragStackState extends State<OptimizedDragStack> {
-  bool _useImages = true;
+  bool _useImages = false;
   bool _optimizeBuilds = true;
-  int _boxCount = 200;
+  int _boxCount = 100;
 
   @override
   void initState() {
