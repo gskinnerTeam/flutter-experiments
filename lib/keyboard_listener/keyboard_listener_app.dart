@@ -26,19 +26,17 @@ class _KeyboardListenerAppState extends State<KeyboardListenerApp> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                OutlineButton(
-                  child: Text("SHOW DIALOG"),
-                  onPressed: () => _handleShowDialogPressed(context),
-                ),
-                Text(_result ?? "", style: TextStyle(fontSize: 32)),
-              ],
-            ),
+  Widget build(BuildContext context) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              OutlineButton(
+                child: Text("SHOW DIALOG"),
+                onPressed: () => _handleShowDialogPressed(context),
+              ),
+              Text(_result ?? "", style: TextStyle(fontSize: 32)),
+            ],
           ),
         ),
       );
