@@ -39,8 +39,8 @@ class NavModel extends RouterModel {
   Map<String, Widget Function()> experimentsByName = {
     "OptimizedDragAndDrop": () => OptimizedDragStack(),
     "ContextMenu ": () => ContextMenuTestApp(),
-    "Nav Tests": () => ImperativeNavTests(),
-    "keyboard Listeners": () => KeyboardListenerApp(),
+    "NavTests": () => ImperativeNavTests(),
+    "keyboardListeners": () => KeyboardListenerApp(),
     //"Opening Cards": () => OpeningTravelCardsApp(),
   };
   List<String> get experimentNames => experimentsByName.keys.toList();
