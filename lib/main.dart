@@ -30,101 +30,98 @@ class ExperimentsApp extends StatelessWidget {
 
 // Main app model, holds the currentExperiment and some builders for them.
 class AppModel extends ChangeNotifier {
-  String _currentExperiment;
+  String _currentPage;
 
-  String get currentExperiment => _currentExperiment;
-  set currentExperiment(String currentExperiment) {
-    _currentExperiment = currentExperiment;
+  String get currentPage => _currentPage;
+  set currentPage(String currentExperiment) {
+    _currentPage = currentExperiment;
     notifyListeners();
   }
 
   // A map of experiment-builders  by name. Used to build the main menu, and render each content area.
-  Map<String, Widget Function()> experimentsByName = {
+  Map<String, Widget Function()> pagesByName = {
     "OptimizedDragAndDrop": () => OptimizedDragStack(),
     "ContextMenu": () => ContextMenuTestApp(),
     "NavTests": () => ImperativeNavTests(),
     "keyboardListeners": () => KeyboardListenerApp(),
     "OpeningCards": () => OpeningTravelCardsApp(),
   };
-  List<String> get experimentNames => experimentsByName.keys.toList();
+  List<String> get pageNames => pagesByName.keys.toList();
 
   // Builds an experiment according to currentExperiment value
-  Widget buildCurrentExperiment() {
-    if (experimentsByName.containsKey(currentExperiment) == false) return null;
-    return experimentsByName[currentExperiment].call();
+  Widget buildCurrentPage() {
+    if (pagesByName.containsKey(currentPage) == false) return null;
+    return pagesByName[currentPage].call();
   }
 
-  bool isValidExperimentName(String value) => experimentsByName.keys.contains(value);
+  bool isValidExperimentName(String value) => pagesByName.keys.contains(value);
 }
 
-/// ////////////////////////////////////////////////
-/// TABBED SCAFFOLD VIEW
-///
-/// A simple scaffold that changes pages based on a tabIndex.
-/// Nothing exciting here, with a few more state variables it could get much more complex.
-///
-class TabbedScaffold extends StatelessWidget {
-  const TabbedScaffold({Key key, this.appModel}) : super(key: key);
-  final AppModel appModel;
+// Main app scaffold, internally shows / hides views depending on app state
+class MainScaffold extends StatelessWidget {
+  const MainScaffold({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnimatedSwitcher(
         duration: Duration(milliseconds: 200),
-        child: appModel.currentExperiment == null
+        child: _appModel.currentPage == null
             // 'Home' View
-            ? Container(
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Flutter Experiments", style: TextStyle(fontSize: 32)),
-                    // TODO Add hyperlink and context-menu here
-                    Text("by gskinner.com"),
-                    SizedBox(height: 20),
-                    _MainMenu(appModel),
-                  ],
-                ),
-              )
-            : Row(
-                children: [
-                  // Side Menu
-                  Column(
-                    children: [
-                      SizedBox(height: 50),
-                      _MenuBtn(label: "HOME", onPressed: (_) => appModel.currentExperiment = null),
-                      _MainMenu(_appModel)
-                    ],
-                  ),
-                  // Page Area
-                  Flexible(
-                    child: AnimatedSwitcher(
-                      duration: Duration(milliseconds: 200),
-                      // Build the current experiment according to nav-state
-                      child: appModel.buildCurrentExperiment(),
-                    ),
-                  ),
-                ],
-              ),
+            ? _HomeView()
+            : _ExperimentView(),
       ),
     );
   }
 }
 
+class _HomeView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+      alignment: Alignment.center,
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text("Flutter Experiments", style: TextStyle(fontSize: 32)),
+        // TODO Add hyperlink and context-menu here
+        Text("by gskinner.com"),
+        SizedBox(height: 20),
+        _MainMenu(_appModel),
+      ]));
+}
+
+class _ExperimentView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        // Side Menu
+        Column(
+          children: [
+            SizedBox(height: 50),
+            _MenuBtn(label: "HOME", onPressed: (_) => _appModel.currentPage = null),
+            _MainMenu(_appModel)
+          ],
+        ),
+        // Page Area
+        Flexible(
+            child: AnimatedSwitcher(
+          duration: Duration(milliseconds: 200),
+          // Build the current experiment according to nav-state
+          child: _appModel.buildCurrentPage(),
+        ))
+      ]);
+}
+
 class _MainMenu extends StatelessWidget {
   const _MainMenu(this.appModel, {Key key}) : super(key: key);
   final AppModel appModel;
-  void selectExperiment(String value) => appModel.currentExperiment = value;
+  void selectExperiment(String value) => appModel.currentPage = value;
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Turn the list of experiments in the model, to menu buttons
-        ...appModel.experimentNames.map((name) => _MenuBtn(
+        ...appModel.pageNames.map((name) => _MenuBtn(
               label: name,
-              isSelected: name == appModel.currentExperiment,
+              isSelected: name == appModel.currentPage,
               onPressed: selectExperiment,
             ))
       ],
@@ -155,10 +152,10 @@ class _MenuBtn extends StatelessWidget {
 
 /// ////////////////////////////////////////////////
 /// ROUTER DELEGATE & PARSER
-/// There are really only 5 methods that matter here.
-/// Delegate: build(), popRoute(), setNewRoutePath()
+/// There are really only 4 methods that matter here.
+/// Delegate: build(), popRoute()
 /// Parser: restoreRouteInformation(), parseRouteInformation()
-///
+/// Both the Delegate and the Parser, take an instance of the AppModel, and use it to change the app state and verify data.
 class AppRouterDelegate extends RouterDelegate<AppModel> with ChangeNotifier {
   AppRouterDelegate(this.model) {
     // Accept the model as a param, and listen to it for changes. Rebuild anytime model changes.
@@ -167,7 +164,7 @@ class AppRouterDelegate extends RouterDelegate<AppModel> with ChangeNotifier {
   final AppModel model;
 
   @override
-  // Allows Router to get the current state of the app when it needs, just boilerplate that needs to be filled in.
+  // By supplying this, we indicate to Router it should update the browser URL
   AppModel get currentConfiguration => model;
 
   @override
@@ -175,9 +172,12 @@ class AppRouterDelegate extends RouterDelegate<AppModel> with ChangeNotifier {
   // This demo only ever has 1 Page in the stack.
   Widget build(BuildContext context) {
     return Navigator(
-      // Viewstack has only one view, TabbedScaffold, it will manage view-state internally
+      // Viewstack has only one view, it will manage view-state internally
       pages: [
-        MaterialPage(child: TabbedScaffold(appModel: model)),
+        // Navigator requires all pages are wrapped in a Page() widget, use MaterialPage cause it's easy.
+        MaterialPage(
+          child: MainScaffold(),
+        ),
       ],
       // With a 1-Page app we never want the first page to be popped. So we'll return a false here.
       // If you had multiple pages, you could do more like `if(route.didPop()){ return popRoute(); } return false;`
@@ -189,16 +189,16 @@ class AppRouterDelegate extends RouterDelegate<AppModel> with ChangeNotifier {
   // Android back button
   Future<bool> popRoute() async {
     // If we have a current experiment we'll go back to the home view.
-    if (model.currentExperiment != null) {
-      model.currentExperiment = null;
+    if (model.currentPage != null) {
+      model.currentPage = null;
       return true;
     }
     return false;
   }
 
   @override
-  // Handle links by updating current app state to match the new
-  // This method is redundant in this example, as we're letting the router update the appModel directly.
+  // This method is redundant in this example, as we're letting the RouteInformationParser
+  // update the appModel directly in order to save boilerplate.
   Future<void> setNewRoutePath(AppModel deepLink) async {}
 }
 
@@ -207,25 +207,25 @@ class AppRouteParser extends RouteInformationParser<AppModel> {
   final AppModel model;
 
   @override
-  // Return location for model
-  RouteInformation restoreRouteInformation(AppModel model) {
-    return RouteInformation(location: "/${model.currentExperiment ?? ""}");
+  // Return location for AppModel's current state (/pageName/)
+  RouteInformation restoreRouteInformation(_) {
+    return RouteInformation(location: "/${model.currentPage ?? ""}");
   }
 
   @override
-  // Parse location, into a matching State object. This will eventually get passed to Delegate.setNewRoutePath.
+  // Parse location, verify links, and update the AppModel with the new state.
   Future<AppModel> parseRouteInformation(RouteInformation routeInformation) async {
     // See if we have any location segments that we can parse into experiments
     String location = routeInformation.location;
     List<String> segments = location.split("/")..removeWhere((e) => e == "");
-    String experiment;
+    String experiment = "OpeningCards";
     if (segments.length > 0) {
       // Assume first segment is an experiment name and validate it
       if (model.isValidExperimentName(segments[0])) {
         experiment = segments[0];
       }
     }
-    model.currentExperiment = experiment;
+    model.currentPage = experiment;
     return model;
   }
 }

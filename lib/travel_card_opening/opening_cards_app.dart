@@ -3,6 +3,34 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+class CardData {
+  CardData({this.title, this.desc, this.url});
+  final String title;
+  final String desc;
+  final String url;
+}
+
+List<CardData> cards = [
+  CardData(
+      title: "Card1", desc: "Desc1", url: "https://images.unsplash.com/photo-1494548162494-384bba4ab999?w=800&q=80"),
+  CardData(
+      title: "Card2", desc: "Desc2", url: "https://images.unsplash.com/photo-1567878130373-9c952877ed1d?w=800&q=80"),
+  CardData(
+      title: "Card3", desc: "Desc3", url: "https://images.unsplash.com/photo-1574579991264-a87099cc17b1?w=800&q=80"),
+  CardData(
+      title: "Card4", desc: "Desc4", url: "https://images.unsplash.com/photo-1494548162494-384bba4ab999?w=800&q=80"),
+  CardData(
+      title: "Card5", desc: "Desc5", url: "https://images.unsplash.com/photo-1567878130373-9c952877ed1d?w=800&q=80"),
+  CardData(
+      title: "Card6", desc: "Desc6", url: "https://images.unsplash.com/photo-1574579991264-a87099cc17b1?w=800&q=80"),
+  CardData(
+      title: "Card7", desc: "Desc7", url: "https://images.unsplash.com/photo-1494548162494-384bba4ab999?w=800&q=80"),
+  CardData(
+      title: "Card8", desc: "Desc8", url: "https://images.unsplash.com/photo-1567878130373-9c952877ed1d?w=800&q=80"),
+  CardData(
+      title: "Card9", desc: "Desc9", url: "https://images.unsplash.com/photo-1574579991264-a87099cc17b1?w=800&q=80"),
+];
+
 class OpeningTravelCardsApp extends StatefulWidget {
   @override
   _OpeningTravelCardsAppState createState() => _OpeningTravelCardsAppState();
@@ -14,6 +42,7 @@ class _OpeningTravelCardsAppState extends State<OpeningTravelCardsApp> {
     return Scaffold(
       backgroundColor: Colors.red,
       body: Stack(
+        fit: StackFit.expand,
         children: [
           AnimatedCardStack(),
         ],
@@ -31,8 +60,6 @@ class AnimatedCardStack extends StatefulWidget {
 }
 
 class _AnimatedCardStackState extends State<AnimatedCardStack> {
-  List<int> cards = List.generate(20, (i) => i);
-
   bool _goingForward = true;
   int _selectedIndex = 0;
   int get selectedIndex => _selectedIndex;
@@ -50,23 +77,125 @@ class _AnimatedCardStackState extends State<AnimatedCardStack> {
 
   @override
   Widget build(BuildContext context) {
-    double padding = 10;
-    return Stack(
-      children: [
-        Row(children: [
-          FlatButton(onPressed: prev, child: Text("<<")),
-          FlatButton(onPressed: next, child: Text(">>")),
-        ]),
-        ...cards.map((int i) {
-          return AnimatedOffset(
-            offset: Offset(300 + (i.toDouble() * (260 + padding)) - (_selectedIndex * (260 + padding)), 300),
-            duration: Duration(milliseconds: 500),
-            curve: Curves.easeOutQuint,
-            delay: Duration(milliseconds: max(0, i - _selectedIndex) * 100),
-            child: TravelCardSmall(isVisible: i > _selectedIndex, index: i),
-          );
-        })
-      ],
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        double padding = 10;
+        Size boxSize = Size(260, 350);
+        double paddedBoxWidth = boxSize.width + padding;
+        Size viewSize = constraints.biggest;
+        Offset listOffset = Offset(viewSize.width - boxSize.width * 4, viewSize.height - boxSize.height - 40);
+        int bgIndex = _selectedIndex;
+        if (_goingForward) {
+          bgIndex = _selectedIndex == 0 ? cards.length - 1 : _selectedIndex - 1;
+        }
+        return Stack(
+          children: [
+            // Background Element 1 (Static, switches when index is changed, swapping with element 2)
+            TravelCard(cards[bgIndex], isVisible: true),
+
+            // Background Element 2 (Transitions from the card pos, to fullscreen)
+            TransitionCard(
+              listOrigin: listOffset.translate(paddedBoxWidth, 0),
+              cardSize: boxSize,
+              viewSize: viewSize,
+              goingForward: _goingForward,
+              card: cards[selectedIndex + (_goingForward ? 0 : 1)],
+            ),
+
+            // Row of Cards
+            ...cards.map((CardData data) {
+              int i = cards.indexOf(data);
+              double initialPos = listOffset.dx + i * paddedBoxWidth;
+              double currentListPos = _selectedIndex * paddedBoxWidth;
+              Offset cardOffset = Offset(initialPos - currentListPos, listOffset.dy);
+              // Use animated offset to move the cards horizontally with some custom ease and delay for each item
+              return AnimatedOffset(
+                offset: cardOffset,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOutSine,
+                delay: Duration(milliseconds: max(0, i - _selectedIndex) * 150),
+                child: SizedBox.fromSize(
+                  size: boxSize,
+                  child: TravelCard(data, isVisible: i > _selectedIndex, index: i),
+                ),
+              );
+            }),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              FlatButton(color: Colors.white, onPressed: prev, child: Text("<<")),
+              FlatButton(color: Colors.white, onPressed: next, child: Text(">>")),
+            ]),
+          ],
+        );
+      },
+    );
+  }
+}
+
+//TODO: Reduce this boilerplate...maybe it just has a reference to the State and CardData?
+class TransitionCard extends StatefulWidget {
+  TransitionCard({
+    Key key,
+    @required this.card,
+    @required this.viewSize,
+    @required this.cardSize,
+    @required this.listOrigin,
+    this.goingForward = true,
+  }) : super(key: key);
+  final CardData card;
+  final Size viewSize;
+  final Size cardSize;
+  final Offset listOrigin;
+  final bool goingForward;
+
+  @override
+  _TransitionCardState createState() => _TransitionCardState();
+}
+
+class _TransitionCardState extends State<TransitionCard> with SingleTickerProviderStateMixin {
+  AnimationController animation;
+
+  Offset get origin => widget.listOrigin;
+  Size get viewSize => widget.viewSize;
+  Size get cardSize => widget.cardSize;
+
+  @override
+  void initState() {
+    animation = AnimationController(duration: Duration(seconds: 1), vsync: this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    animation?.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant TransitionCard oldWidget) {
+    //TODO: Add support for goingBack
+    if (oldWidget.card != widget.card || widget.goingForward != oldWidget.goingForward) {
+      if (widget.goingForward) {
+        animation.reverse(from: 1);
+      } else {
+        animation.forward(from: 0);
+      }
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double scale = animation.value;
+    double distanceFromRight = (viewSize.width - (origin.dx + cardSize.width));
+    double distanceFromBottom = (viewSize.height - (origin.dy + cardSize.height));
+    EdgeInsets marginInsets = EdgeInsets.only(
+        left: origin.dx * scale,
+        right: distanceFromRight * scale,
+        top: origin.dy * scale,
+        bottom: distanceFromBottom * scale);
+    return Container(
+      margin: marginInsets,
+      child: TravelCard(widget.card, isVisible: true),
     );
   }
 }
@@ -120,11 +249,12 @@ class _AnimatedOffsetState extends State<AnimatedOffset> {
   }
 }
 
-class TravelCardSmall extends StatelessWidget {
+class TravelCard extends StatelessWidget {
+  final CardData data;
   final int index;
   final bool isVisible;
 
-  const TravelCardSmall({Key key, this.isVisible, this.index}) : super(key: key);
+  const TravelCard(this.data, {Key key, this.isVisible, this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -135,17 +265,15 @@ class TravelCardSmall extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(24)),
-          child: Container(
-            width: 260,
-            height: 400,
-            color: Colors.blue.shade200,
-            child: Image.network(
-              index % 2 == 0
-                  ? "https://images.unsplash.com/photo-1567878130373-9c952877ed1d?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-                  : "https://images.unsplash.com/photo-1574579991264-a87099cc17b1?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80",
-              fit: BoxFit.cover,
+          child: Stack(fit: StackFit.expand, children: [
+            Image.network(data.url, fit: BoxFit.cover),
+            Center(
+              child: Text(
+                data.title,
+                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 26),
+              ),
             ),
-          ),
+          ]),
         ),
       ),
     );
