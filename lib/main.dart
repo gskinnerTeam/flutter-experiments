@@ -12,6 +12,11 @@ void main() {
   runApp(StatsFl(child: ExperimentsApp()));
 }
 
+// Some shared state for demo
+AppModel _appModel = AppModel();
+AppRouterDelegate _appRouterDelegate = AppRouterDelegate(_appModel);
+AppRouteParser _appRouteParser = AppRouteParser(_appModel);
+
 // Main App
 class ExperimentsApp extends StatelessWidget {
   @override
@@ -23,27 +28,9 @@ class ExperimentsApp extends StatelessWidget {
   }
 }
 
-abstract class RouterModel extends ChangeNotifier {
-  bool navigateUp();
-  void copyFromLink(String location);
-  String toLink();
-
-  Widget buildNavigator(BuildContext context);
-}
-
-// A model that holds state regarding the app navigation, and API for interaction with RouterDelegate and RouteParser
-class NavModel extends RouterModel {
+// Main app model, holds the currentExperiment and some builders for them.
+class AppModel extends ChangeNotifier {
   String _currentExperiment;
-
-  // A map of view-builders by name. Used to build the main menu, and render each content area.
-  Map<String, Widget Function()> experimentsByName = {
-    "OptimizedDragAndDrop": () => OptimizedDragStack(),
-    "ContextMenu ": () => ContextMenuTestApp(),
-    "NavTests": () => ImperativeNavTests(),
-    "keyboardListeners": () => KeyboardListenerApp(),
-    //"Opening Cards": () => OpeningTravelCardsApp(),
-  };
-  List<String> get experimentNames => experimentsByName.keys.toList();
 
   String get currentExperiment => _currentExperiment;
   set currentExperiment(String currentExperiment) {
@@ -51,14 +38,15 @@ class NavModel extends RouterModel {
     notifyListeners();
   }
 
-  // Called by RouterDelegate when AndroidBack btn is pressed
-  bool navigateUp() {
-    if (currentExperiment != null) {
-      currentExperiment = null;
-      return true;
-    }
-    return false;
-  }
+  // A map of experiment-builders  by name. Used to build the main menu, and render each content area.
+  Map<String, Widget Function()> experimentsByName = {
+    "OptimizedDragAndDrop": () => OptimizedDragStack(),
+    "ContextMenu": () => ContextMenuTestApp(),
+    "NavTests": () => ImperativeNavTests(),
+    "keyboardListeners": () => KeyboardListenerApp(),
+    "OpeningCards": () => OpeningTravelCardsApp(),
+  };
+  List<String> get experimentNames => experimentsByName.keys.toList();
 
   // Builds an experiment according to currentExperiment value
   Widget buildCurrentExperiment() {
@@ -66,52 +54,25 @@ class NavModel extends RouterModel {
     return experimentsByName[currentExperiment].call();
   }
 
-  // Called by RouteParser, when the browser wants the link
-  String toLink() {
-    return currentExperiment ?? "/";
-  }
-
-  // Called by Router, when it has a new location/deeplink
-  void copyFromLink(String location) {
-    List<String> segments = location.split("/");
-    if (segments.length > 0) {
-      // Validate the experimentName since the user can type anything into the browser.
-      if (experimentsByName.keys.contains(segments[0])) {
-        currentExperiment = segments[0];
-      }
-    }
-  }
-
-  @override
-  Widget buildNavigator(BuildContext context) {
-    return Navigator(
-      // The main scaffold will not support pop() usage directly, so we'll just return a false here.
-      onPopPage: (route, result) => false,
-      // Viewstack has only one view, TabbedScaffold, it will build it's own view internally.
-      pages: [
-        MaterialPage(child: TabbedScaffold(navModel: this)),
-      ],
-    );
-  }
+  bool isValidExperimentName(String value) => experimentsByName.keys.contains(value);
 }
-
-NavModel _navModel = NavModel();
-AppRouterDelegate _appRouterDelegate = AppRouterDelegate(_navModel);
-AppRouteParser _appRouteParser = AppRouteParser(_navModel);
 
 /// ////////////////////////////////////////////////
 /// TABBED SCAFFOLD VIEW
-/// ///////////////////////////////////////////////
+///
+/// A simple scaffold that changes pages based on a tabIndex.
+/// Nothing exciting here, with a few more state variables it could get much more complex.
+///
 class TabbedScaffold extends StatelessWidget {
-  const TabbedScaffold({Key key, this.navModel}) : super(key: key);
-  final NavModel navModel;
+  const TabbedScaffold({Key key, this.appModel}) : super(key: key);
+  final AppModel appModel;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnimatedSwitcher(
         duration: Duration(milliseconds: 200),
-        child: navModel.currentExperiment == null
+        child: appModel.currentExperiment == null
             // 'Home' View
             ? Container(
                 alignment: Alignment.center,
@@ -122,7 +83,7 @@ class TabbedScaffold extends StatelessWidget {
                     // TODO Add hyperlink and context-menu here
                     Text("by gskinner.com"),
                     SizedBox(height: 20),
-                    _MainMenu(navModel),
+                    _MainMenu(appModel),
                   ],
                 ),
               )
@@ -132,8 +93,8 @@ class TabbedScaffold extends StatelessWidget {
                   Column(
                     children: [
                       SizedBox(height: 50),
-                      _MenuBtn(label: "HOME", onPressed: (_) => navModel.currentExperiment = null),
-                      _MainMenu(_navModel)
+                      _MenuBtn(label: "HOME", onPressed: (_) => appModel.currentExperiment = null),
+                      _MainMenu(_appModel)
                     ],
                   ),
                   // Page Area
@@ -141,7 +102,7 @@ class TabbedScaffold extends StatelessWidget {
                     child: AnimatedSwitcher(
                       duration: Duration(milliseconds: 200),
                       // Build the current experiment according to nav-state
-                      child: navModel.buildCurrentExperiment(),
+                      child: appModel.buildCurrentExperiment(),
                     ),
                   ),
                 ],
@@ -152,18 +113,18 @@ class TabbedScaffold extends StatelessWidget {
 }
 
 class _MainMenu extends StatelessWidget {
-  const _MainMenu(this.navModel, {Key key}) : super(key: key);
-  final NavModel navModel;
-  void selectExperiment(String value) => navModel.currentExperiment = value;
+  const _MainMenu(this.appModel, {Key key}) : super(key: key);
+  final AppModel appModel;
+  void selectExperiment(String value) => appModel.currentExperiment = value;
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Turn the list of experiments in the model, to menu buttons
-        ...navModel.experimentNames.map((name) => _MenuBtn(
+        ...appModel.experimentNames.map((name) => _MenuBtn(
               label: name,
-              isSelected: name == navModel.currentExperiment,
+              isSelected: name == appModel.currentExperiment,
               onPressed: selectExperiment,
             ))
       ],
@@ -194,38 +155,77 @@ class _MenuBtn extends StatelessWidget {
 
 /// ////////////////////////////////////////////////
 /// ROUTER DELEGATE & PARSER
-
-class AppRouterDelegate extends RouterDelegate<RouterModel> with ChangeNotifier {
+/// There are really only 5 methods that matter here.
+/// Delegate: build(), popRoute(), setNewRoutePath()
+/// Parser: restoreRouteInformation(), parseRouteInformation()
+///
+class AppRouterDelegate extends RouterDelegate<AppModel> with ChangeNotifier {
   AppRouterDelegate(this.model) {
     // Accept the model as a param, and listen to it for changes. Rebuild anytime model changes.
     this.model.addListener(notifyListeners);
   }
-  final RouterModel model;
+  final AppModel model;
 
   @override
-  // Allows Router to get the current state of the app when it needs
-  RouterModel get currentConfiguration => model;
+  // Allows Router to get the current state of the app when it needs, just boilerplate that needs to be filled in.
+  AppModel get currentConfiguration => model;
 
   @override
-  Widget build(BuildContext context) => model.buildNavigator(context);
+  // Return the current stack of pages according to state.
+  // This demo only ever has 1 Page in the stack.
+  Widget build(BuildContext context) {
+    return Navigator(
+      // Viewstack has only one view, TabbedScaffold, it will manage view-state internally
+      pages: [
+        MaterialPage(child: TabbedScaffold(appModel: model)),
+      ],
+      // With a 1-Page app we never want the first page to be popped. So we'll return a false here.
+      // If you had multiple pages, you could do more like `if(route.didPop()){ return popRoute(); } return false;`
+      onPopPage: (route, result) => false,
+    );
+  }
 
   @override
-  // Android back btn goes up in the navigation:
-  Future<bool> popRoute() async => model.navigateUp();
+  // Android back button
+  Future<bool> popRoute() async {
+    // If we have a current experiment we'll go back to the home view.
+    if (model.currentExperiment != null) {
+      model.currentExperiment = null;
+      return true;
+    }
+    return false;
+  }
 
   @override
-  Future<void> setNewRoutePath(newNav) async => model.copyFromLink(newNav.toLink());
+  // Handle links by updating current app state to match the new
+  // This method is redundant in this example, as we're letting the router update the appModel directly.
+  Future<void> setNewRoutePath(AppModel deepLink) async {}
 }
 
-class AppRouteParser extends RouteInformationParser<RouterModel> {
+class AppRouteParser extends RouteInformationParser<AppModel> {
   AppRouteParser(this.model);
-  final RouterModel model;
+  final AppModel model;
 
   @override
-  RouteInformation restoreRouteInformation(RouterModel model) => RouteInformation(location: model.toLink());
+  // Return location for model
+  RouteInformation restoreRouteInformation(AppModel model) {
+    return RouteInformation(location: "/${model.currentExperiment ?? ""}");
+  }
 
   @override
-  Future<RouterModel> parseRouteInformation(RouteInformation routeInformation) async {
-    return model..copyFromLink(routeInformation.location);
+  // Parse location, into a matching State object. This will eventually get passed to Delegate.setNewRoutePath.
+  Future<AppModel> parseRouteInformation(RouteInformation routeInformation) async {
+    // See if we have any location segments that we can parse into experiments
+    String location = routeInformation.location;
+    List<String> segments = location.split("/")..removeWhere((e) => e == "");
+    String experiment;
+    if (segments.length > 0) {
+      // Assume first segment is an experiment name and validate it
+      if (model.isValidExperimentName(segments[0])) {
+        experiment = segments[0];
+      }
+    }
+    model.currentExperiment = experiment;
+    return model;
   }
 }

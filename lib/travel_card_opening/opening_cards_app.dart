@@ -11,14 +11,12 @@ class OpeningTravelCardsApp extends StatefulWidget {
 class _OpeningTravelCardsAppState extends State<OpeningTravelCardsApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.red,
-        body: Stack(
-          children: [
-            AnimatedCardStack(),
-          ],
-        ),
+    return Scaffold(
+      backgroundColor: Colors.red,
+      body: Stack(
+        children: [
+          AnimatedCardStack(),
+        ],
       ),
     );
   }
