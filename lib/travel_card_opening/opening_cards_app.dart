@@ -161,6 +161,7 @@ class _TransitionCardState extends State<TransitionCard> with SingleTickerProvid
   @override
   void initState() {
     animation = AnimationController(duration: Duration(seconds: 1), vsync: this);
+    animation.addListener(() => setState(() {}));
     super.initState();
   }
 

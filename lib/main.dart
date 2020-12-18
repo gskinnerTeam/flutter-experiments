@@ -16,6 +16,7 @@ void main() {
 AppModel _appModel = AppModel();
 AppRouterDelegate _appRouterDelegate = AppRouterDelegate(_appModel);
 AppRouteParser _appRouteParser = AppRouteParser(_appModel);
+String userVersion = "1.0";
 
 // Main App
 class ExperimentsApp extends StatelessWidget {
@@ -123,7 +124,9 @@ class _MainMenu extends StatelessWidget {
               label: name,
               isSelected: name == appModel.currentPage,
               onPressed: selectExperiment,
-            ))
+            )),
+        SizedBox(height: 40),
+        Text("v${userVersion}"),
       ],
     );
   }

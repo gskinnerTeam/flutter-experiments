@@ -1,3 +1,3 @@
-CALL flutter build web
-CALL del .\docs /F /Q
-CALL xcopy .\build\web .\docs /E /F /Q
+CALL git add -A
+CALL git commit -m "Web Deploy"
+CALL git push -u origin master
