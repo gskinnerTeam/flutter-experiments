@@ -61,6 +61,7 @@ class AnimatedCardStack extends StatefulWidget {
 
 class _AnimatedCardStackState extends State<AnimatedCardStack> {
   bool _goingForward = true;
+  int _lastClickTime = 0;
   int _selectedIndex = 0;
   int get selectedIndex => _selectedIndex;
   set selectedIndex(value) => setState(() => _selectedIndex = value);
@@ -71,12 +72,14 @@ class _AnimatedCardStackState extends State<AnimatedCardStack> {
   }
 
   void prev() {
+    _lastClickTime = DateTime.now().millisecondsSinceEpoch;
     _goingForward = false;
     if (selectedIndex > 0) selectedIndex--;
   }
 
   @override
   Widget build(BuildContext context) {
+    bool enableBtns = DateTime.now().millisecondsSinceEpoch - _lastClickTime > 300;
     return LayoutBuilder(
       builder: (_, constraints) {
         double padding = 10;
@@ -121,8 +124,8 @@ class _AnimatedCardStackState extends State<AnimatedCardStack> {
               );
             }),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              FlatButton(color: Colors.white, onPressed: prev, child: Text("<<")),
-              FlatButton(color: Colors.white, onPressed: next, child: Text(">>")),
+              FlatButton(color: Colors.white, onPressed: enableBtns ? prev : null, child: Text("<<")),
+              FlatButton(color: Colors.white, onPressed: enableBtns ? next : null, child: Text(">>")),
             ]),
           ],
         );

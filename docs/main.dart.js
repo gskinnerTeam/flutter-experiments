@@ -14183,13 +14183,14 @@ this.c=null},
 oJ:function oJ(a){this.a=a},
 tz:function tz(a){var _=this
 _.d=!0
-_.e=0
+_.f=_.e=0
 _.a=null
 _.b=a
 _.c=null},
 VD:function VD(a,b){this.a=a
 this.b=b},
-VC:function VC(a){this.a=a},
+VC:function VC(a,b){this.a=a
+this.b=b},
 VB:function VB(a,b,c,d){var _=this
 _.a=a
 _.b=b
@@ -51118,7 +51119,7 @@ if(!!l.fixed$length)H.j(P.J("removeWhere"))
 C.b.oN(l,new F.Jn(),!0)
 if(l.length>0){o=l[0]
 n=p.a.b
-m=n.ga7(n).A(0,o)?l[0]:"OpeningCards"}else m="OpeningCards"
+m=n.ga7(n).A(0,o)?l[0]:null}else m=null
 o=p.a
 o.a=m
 o.aX()
@@ -51256,18 +51257,20 @@ B.tz.prototype={
 sxX:function(a,b){this.ae(new B.VD(this,b))},
 Wg:function(a){var s
 this.d=!0
-s=this.e
+s=this.f
 $.wi()
 if(s<8)this.sxX(0,s+1)},
-WG:function(){this.d=!1
-var s=this.e
-if(s>0)this.sxX(0,s-1)},
-D:function(a,b){return new A.yJ(new B.VC(this),null)}}
+WG:function(){var s,r=this
+r.e=Date.now()
+r.d=!1
+s=r.f
+if(s>0)r.sxX(0,s-1)},
+D:function(a,b){return new A.yJ(new B.VC(this,Date.now()-this.e>300),null)}}
 B.VD.prototype={
-$0:function(){return this.a.e=this.b},
+$0:function(){return this.a.f=this.b},
 $S:28}
 B.VC.prototype={
-$2:function(a,b){var s,r,q,p,o=null,n=new P.M(260,350),m=C.e.V(1/0,b.a,b.b),l=C.e.V(1/0,b.c,b.d),k=m-1040,j=l-350-40,i=this.a,h=i.e,g=i.d
+$2:function(a,b){var s,r,q,p,o=null,n=new P.M(260,350),m=C.e.V(1/0,b.a,b.b),l=C.e.V(1/0,b.c,b.d),k=m-1040,j=l-350-40,i=this.a,h=i.f,g=i.d
 if(g)if(h===0){$.wi()
 s=8}else s=h-1
 else s=h
@@ -51277,11 +51280,15 @@ p=t.X
 g=H.d([new B.nC(q,!0,o),new B.tq(r[h+(g?0:1)],new P.M(m,l),n,new P.p(k+270,j+0),g,o)],p)
 l=$.wi()
 C.b.G(g,new H.ar(l,new B.VB(i,new P.p(k,j),270,n),H.a8(l).j("ar<1,h*>")))
-g.push(T.a2J(H.d([N.pN(L.cb("<<",o),C.j,i.gWF()),N.pN(L.cb(">>",o),C.j,i.gi0(i))],p),C.fR))
+m=this.b
+l=m?i.gWF():o
+l=N.pN(L.cb("<<",o),C.j,l)
+m=m?i.gi0(i):o
+g.push(T.a2J(H.d([l,N.pN(L.cb(">>",o),C.j,m)],p),C.fR))
 return T.fg(C.be,g,C.br)},
 $S:357}
 B.VB.prototype={
-$1:function(a){var s=this,r=C.b.iX($.wi(),a),q=s.b,p=s.c,o=s.a.e,n=P.bk(0,0,0,500,0,0),m=P.bk(0,0,0,Math.max(0,r-o)*150,0,0),l=s.d
+$1:function(a){var s=this,r=C.b.iX($.wi(),a),q=s.b,p=s.c,o=s.a.f,n=P.bk(0,0,0,500,0,0),m=P.bk(0,0,0,Math.max(0,r-o)*150,0,0),l=s.d
 return new B.jY(m,new P.p(q.a+r*p-o*p,q.b),n,new T.nl(l.a,l.b,new B.nC(a,r>o,null),null),C.w5,null)},
 $S:358}
 B.tq.prototype={
