@@ -104,7 +104,7 @@ class _OptimizedDragStackState extends State<OptimizedDragStack> {
                         interval: 100,
                         showTicks: true,
                         showLabels: true,
-                        showTooltip: true,
+//                        /showTooltip: true,
                         minorTicksPerInterval: 1,
                         onChanged: (dynamic value) => setState(() {
                           _boxCount = (value as double).toInt();

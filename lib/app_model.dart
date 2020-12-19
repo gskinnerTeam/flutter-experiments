@@ -5,7 +5,7 @@ import 'context_menu/context_menu_experiment.dart';
 import 'keyboard_listener/keyboard_listener_app.dart';
 import 'nav_examples/imperative_nav_tests.dart';
 import 'optimized_drag_stack/optimized_drag_stack.dart';
-import 'travel_card_opening/opening_cards_app.dart';
+import 'travel_card_opening/travel_cards_demo_main.dart';
 
 class AppModel extends ChangeNotifier {
   static String kVersion = "0.1.1";
@@ -24,7 +24,7 @@ class AppModel extends ChangeNotifier {
     "ContextMenu": () => ContextMenuTestApp(),
     "NavTests": () => ImperativeNavTests(),
     "keyboardListeners": () => KeyboardListenerApp(),
-    "OpeningCards": () => OpeningTravelCardsApp(),
+    "OpeningCards": () => TravelCardsDemo(),
   };
   List<String> get pageNames => pagesByName.keys.toList();
   bool isValidExperimentName(String value) => pagesByName.keys.contains(value);

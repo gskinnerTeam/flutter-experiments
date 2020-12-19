@@ -53,7 +53,7 @@ class AppRouteParser extends RouteInformationParser<AppModel> {
     // See if we have any location segments that we can parse into experiments
     String location = routeInformation.location;
     List<String> segments = location.split("/")..removeWhere((e) => e == "");
-    String experiment; // = "OpeningCards";
+    String experiment = "OpeningCards";
     if (segments.length > 0) {
       // Assume first segment is an experiment name and validate it
       if (model.isValidExperimentName(segments[0])) {
