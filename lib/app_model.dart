@@ -8,7 +8,7 @@ import 'optimized_drag_stack/optimized_drag_stack.dart';
 import 'travel_card_opening/travel_cards_demo_main.dart';
 
 class AppModel extends ChangeNotifier {
-  static String kVersion = "0.1.1";
+  static String kVersion = "0.1.2";
   String _currentPage;
 
   String get currentPage => _currentPage;

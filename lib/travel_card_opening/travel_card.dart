@@ -5,8 +5,14 @@ import 'travel_cards_demo_main.dart';
 import 'shared_widgets.dart';
 
 class TravelCard extends StatefulWidget {
-  const TravelCard(this.data, {Key key, this.isSelected = false, this.onPressed, this.scrollController, this.largeMode})
-      : super(key: key);
+  const TravelCard(
+    this.data, {
+    Key key,
+    this.isSelected = false,
+    this.onPressed,
+    this.scrollController,
+    this.largeMode = false,
+  }) : super(key: key);
   final CardData data;
   final bool isSelected;
   final largeMode;
@@ -67,10 +73,13 @@ class _TravelCardState extends State<TravelCard> {
                     /// /////////////////////////////
                     /// Text Content
                     AutoFade(
-                      delay: Duration(milliseconds: 500),
+                      offset: Offset(0, 100),
+                      curve: Curves.easeOut,
+                      duration: Duration(milliseconds: widget.largeMode ? 700 : 0),
+                      delay: Duration(milliseconds: widget.largeMode ? 300 : 0),
                       child: Container(
                         padding: EdgeInsets.all(24),
-                        alignment: widget.largeMode ?? false ? Alignment.bottomRight : Alignment.bottomLeft,
+                        alignment: widget.largeMode ? Alignment.bottomRight : Alignment.bottomLeft,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,

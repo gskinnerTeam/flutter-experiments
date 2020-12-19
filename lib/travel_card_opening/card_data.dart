@@ -21,7 +21,7 @@ List<CardData> cards = List.generate(
   12,
   (index) => CardData(
     title: lipsum.createWord(numWords: 2),
-    desc: lipsum.createWord(numWords: 5),
+    desc: "${lipsum.createWord(numWords: 2)} - ${lipsum.createWord(numWords: 2)}",
     url: imgFromId(unsplashIds[index % unsplashIds.length]),
   ),
 );
