@@ -7,14 +7,38 @@ import 'travel_card.dart';
 
 Duration fastDuration = Duration(milliseconds: 700);
 
-class TravelCardsDemo extends StatelessWidget {
+class TravelCardsDemo extends StatefulWidget {
+  @override
+  _TravelCardsDemoState createState() => _TravelCardsDemoState();
+}
+
+class _TravelCardsDemoState extends State<TravelCardsDemo> {
+  bool _useRtl = false;
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          TravelCardStack(),
-        ],
+    return Directionality(
+      textDirection: _useRtl ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Main Content
+            Positioned.fill(
+              top: 30,
+              child: TravelCardStack(),
+            ),
+            // Checkbox to toggle RTL layout
+            Align(
+              alignment: Alignment.topLeft,
+              child: Row(
+                textDirection: TextDirection.ltr,
+                children: [
+                  Checkbox(value: _useRtl, onChanged: (value) => setState(() => _useRtl = value)),
+                  Text("RTL Mode"),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -114,7 +138,7 @@ class _TravelCardStackState extends State<TravelCardStack> {
               Container(
                 // List defines the width of the items
                 width: boxSize.width + 12,
-                padding: EdgeInsets.only(left: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12),
                 // Just a basic listView
                 child: ListView(
                   controller: _scrollController,

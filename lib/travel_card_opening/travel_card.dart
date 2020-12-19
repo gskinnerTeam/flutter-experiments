@@ -50,6 +50,10 @@ class _TravelCardState extends State<TravelCard> {
     if (widget.onPressed != null) {
       overlayOpacity = _isMouseOver ? 0 : .3;
     }
+
+    TextDirection dir = Directionality.of(context);
+    Alignment largeModeAlign = dir == TextDirection.ltr ? Alignment.bottomRight : Alignment.bottomLeft;
+    Alignment smallModeAlign = dir == TextDirection.ltr ? Alignment.bottomLeft : Alignment.bottomRight;
     return RoundedCard(
       child: AnimatedSwitcher(
         duration: Duration(milliseconds: widget.isSelected ? 0 : 200),
@@ -84,7 +88,7 @@ class _TravelCardState extends State<TravelCard> {
                     /// Text Content
                     Container(
                       padding: EdgeInsets.all(24),
-                      alignment: widget.largeMode ? Alignment.bottomRight : Alignment.bottomLeft,
+                      alignment: widget.largeMode ? largeModeAlign : smallModeAlign,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: widget.largeMode ? CrossAxisAlignment.end : CrossAxisAlignment.start,
