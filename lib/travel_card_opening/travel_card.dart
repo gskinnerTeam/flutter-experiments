@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
 import 'card_data.dart';
@@ -26,18 +27,22 @@ class _TravelCardState extends State<TravelCard> {
   bool _isMouseOver = false;
   set isOver(bool value) => setState(() => _isMouseOver = value);
 
+  double get textScale => widget.largeMode ? 1.5 : .8;
+
+  TextStyle get titleStyle {
+    return TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26 * textScale, height: .95);
+  }
+
+  TextStyle get descStyle {
+    return TextStyle(color: Colors.white, fontSize: 16 * textScale);
+  }
+
   void _handlePressed() {
     widget.onPressed?.call(ContextUtils.localToGlobal(context));
   }
 
   @override
   Widget build(BuildContext context) {
-    AutoFade fadeIn(int delay, Widget child) => AutoFade(
-        offset: Offset(0, 100),
-        curve: Curves.easeInOut,
-        duration: Duration(milliseconds: widget.largeMode ? 700 : 0),
-        delay: Duration(milliseconds: widget.largeMode ? delay : 0),
-        child: child);
     bool enableMouseOverEffect = _isMouseOver && widget.onPressed != null;
     Duration mouseOverDuration = Duration(milliseconds: 700);
     // Cards that are clickable will appear dimmed, until you mouse over, but we don't want to apply this logic to non-clickable cards.
@@ -82,26 +87,37 @@ class _TravelCardState extends State<TravelCard> {
                       alignment: widget.largeMode ? Alignment.bottomRight : Alignment.bottomLeft,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: widget.largeMode ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                         children: [
-                          fadeIn(100, Container(width: 30, height: 3, color: Colors.white)),
-                          SizedBox(height: 8),
-                          fadeIn(
-                            150,
-                            Text(widget.data.desc.toUpperCase(),
-                                style: TextStyle(color: Colors.white, fontSize: 16), maxLines: 1),
+                          //White Line
+                          FadeInUp(
+                            delay: Duration(milliseconds: 100),
+                            child: Container(width: 30, height: 3, color: Colors.white),
                           ),
                           SizedBox(height: 8),
-                          fadeIn(
-                              200,
-                              Text(
-                                widget.data.title.toUpperCase(),
-                                style: TextStyle(
-                                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26, height: .95),
-                              )),
+                          // Desc
+                          FadeInUp(
+                            delay: Duration(milliseconds: 200),
+                            child: Text(widget.data.desc.toUpperCase(), style: descStyle, maxLines: 1),
+                          ),
+                          SizedBox(height: 8),
+                          // Title
+                          FadeInUp(
+                              delay: Duration(milliseconds: 300),
+                              child: Text(widget.data.title.toUpperCase(), style: titleStyle)),
                         ],
                       ),
                     ),
+                    if (enableMouseOverEffect)
+                      Positioned.fill(
+                        child: FadeIn(
+                          child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: Colors.white, width: 3)),
+                          ),
+                        ),
+                      ),
                   ]),
                 ),
               )
