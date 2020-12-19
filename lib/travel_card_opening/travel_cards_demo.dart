@@ -1,13 +1,24 @@
-// A stack with children, and a prev/next api. When it moves, it does a delayed tween on all children.
-// When item is below index it instantly stops being rendered.
-// At the same time, the background card transitions in from underneath
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_experiments/travel_card_opening/shared_widgets.dart';
-
+import '_shared.dart';
 import 'card_data.dart';
 import 'opening_card.dart';
-import 'travel_cards_demo_main.dart';
 import 'travel_card.dart';
+
+Duration fastDuration = Duration(milliseconds: 700);
+
+class TravelCardsDemo extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          TravelCardStack(),
+        ],
+      ),
+    );
+  }
+}
 
 class TravelCardStack extends StatefulWidget {
   @override
@@ -16,8 +27,8 @@ class TravelCardStack extends StatefulWidget {
 
 class _TravelCardStackState extends State<TravelCardStack> {
   CardData _bgData;
-  CardData _selectedData;
-  Offset _selectedOffset;
+  CardData _currentCard;
+  Offset _currentCardPos;
   bool _isOpening = false;
 
   // Can use a scroll controller to animate list items as they come on stage.
@@ -26,7 +37,7 @@ class _TravelCardStackState extends State<TravelCardStack> {
 
   @override
   void initState() {
-    _selectedData = _bgData = cards[0];
+    _currentCard = _bgData = cards[0];
     super.initState();
   }
 
@@ -38,15 +49,15 @@ class _TravelCardStackState extends State<TravelCardStack> {
 
   // When card is clicked, change selectedData and set isOpening flag
   void _handleItemClicked(Offset globalPos, CardData data) {
-    if (_selectedData == data) return;
+    if (_currentCard == data) return;
     if (_isOpening) return;
     // Convert the globalPos we get from the clickedItem, into a localState for this Widget
     Offset localPos = ContextUtils.globalToLocal(context, globalPos);
     print(localPos);
 
     setState(() {
-      _selectedOffset = localPos;
-      _selectedData = data;
+      _currentCardPos = localPos;
+      _currentCard = data;
       _isOpening = true;
     });
   }
@@ -55,7 +66,7 @@ class _TravelCardStackState extends State<TravelCardStack> {
   void _handleCardOpened() {
     setState(() {
       _isOpening = false;
-      _bgData = _selectedData;
+      _bgData = _currentCard;
     });
   }
 
@@ -74,20 +85,29 @@ class _TravelCardStackState extends State<TravelCardStack> {
                 TravelCard(_bgData, largeMode: true),
               },
 
-              Positioned.fill(
-                key: ObjectKey(_selectedData),
-                child: AutoFade(child: Container(color: Colors.black.withOpacity(.9))),
-              ),
+              // Until we have a position, we'll hide the OpeningContainer and FadeUnderlay
+              if (_currentCardPos != null) ...{
+                /// A black underlay that sits between the background and transition, fading in each time we change _selectedData
+                Positioned.fill(
+                  key: ObjectKey(_currentCard),
+                  child: AutoFade(
+                    duration: fastDuration,
+                    child: Container(color: Colors.black.withOpacity(.9)),
+                  ),
+                ),
 
-              /// ///////////////////////////////////////////////////
-              /// OpeningCard, Each time the key is changed, open from the topLeftOffset and fills the Stack
-              OpeningCard(
-                key: ValueKey(_selectedData),
-                topLeftOffset: _selectedOffset,
-                closedSize: boxSize,
-                child: TravelCard(_selectedData, largeMode: true),
-                onEnd: _handleCardOpened,
-              ),
+                /// ///////////////////////////////////////////////////
+                /// OpeningCard, Each time the key is changed, open from the topLeftOffset and fills the Stack
+
+                OpeningContainer(
+                  key: ValueKey(_currentCard),
+                  topLeftOffset: _currentCardPos,
+                  closedSize: boxSize,
+                  duration: fastDuration,
+                  child: TravelCard(_currentCard, largeMode: true),
+                  onEnd: _handleCardOpened,
+                ),
+              },
 
               /// ///////////////////////////////////////////////////
               /// List of TravelCards that report their globalOffset when clicked
@@ -102,7 +122,7 @@ class _TravelCardStackState extends State<TravelCardStack> {
                   children: [
                     SizedBox(height: 24), //Padding at the top of the list
                     ...cards.map((CardData data) {
-                      bool isSelected = _selectedData == data;
+                      bool isSelected = _currentCard == data;
                       return Padding(
                         padding: EdgeInsets.only(bottom: 12),
                         child: Container(

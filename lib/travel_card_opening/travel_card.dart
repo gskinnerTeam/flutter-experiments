@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'card_data.dart';
-import 'travel_cards_demo_main.dart';
-import 'shared_widgets.dart';
+import '_shared.dart';
 
 class TravelCard extends StatefulWidget {
   const TravelCard(
@@ -33,6 +32,12 @@ class _TravelCardState extends State<TravelCard> {
 
   @override
   Widget build(BuildContext context) {
+    AutoFade fadeIn(int delay, Widget child) => AutoFade(
+        offset: Offset(0, 100),
+        curve: Curves.easeInOut,
+        duration: Duration(milliseconds: widget.largeMode ? 700 : 0),
+        delay: Duration(milliseconds: widget.largeMode ? delay : 0),
+        child: child);
     bool enableMouseOverEffect = _isMouseOver && widget.onPressed != null;
     Duration mouseOverDuration = Duration(milliseconds: 700);
     // Cards that are clickable will appear dimmed, until you mouse over, but we don't want to apply this logic to non-clickable cards.
@@ -42,7 +47,7 @@ class _TravelCardState extends State<TravelCard> {
     }
     return RoundedCard(
       child: AnimatedSwitcher(
-        duration: Duration(milliseconds: widget.isSelected ? 0 : 500),
+        duration: Duration(milliseconds: widget.isSelected ? 0 : 200),
         child: widget.isSelected == false
             ? MouseRegion(
                 onEnter: (_) => isOver = true,
@@ -72,30 +77,29 @@ class _TravelCardState extends State<TravelCard> {
 
                     /// /////////////////////////////
                     /// Text Content
-                    AutoFade(
-                      offset: Offset(0, 100),
-                      curve: Curves.easeOut,
-                      duration: Duration(milliseconds: widget.largeMode ? 700 : 0),
-                      delay: Duration(milliseconds: widget.largeMode ? 300 : 0),
-                      child: Container(
-                        padding: EdgeInsets.all(24),
-                        alignment: widget.largeMode ? Alignment.bottomRight : Alignment.bottomLeft,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(width: 30, height: 3, color: Colors.white),
-                            SizedBox(height: 8),
+                    Container(
+                      padding: EdgeInsets.all(24),
+                      alignment: widget.largeMode ? Alignment.bottomRight : Alignment.bottomLeft,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          fadeIn(100, Container(width: 30, height: 3, color: Colors.white)),
+                          SizedBox(height: 8),
+                          fadeIn(
+                            150,
                             Text(widget.data.desc.toUpperCase(),
                                 style: TextStyle(color: Colors.white, fontSize: 16), maxLines: 1),
-                            SizedBox(height: 8),
-                            Text(
-                              widget.data.title.toUpperCase(),
-                              style: TextStyle(
-                                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26, height: .95),
-                            ),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: 8),
+                          fadeIn(
+                              200,
+                              Text(
+                                widget.data.title.toUpperCase(),
+                                style: TextStyle(
+                                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26, height: .95),
+                              )),
+                        ],
                       ),
                     ),
                   ]),

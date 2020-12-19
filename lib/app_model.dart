@@ -5,7 +5,7 @@ import 'context_menu/context_menu_experiment.dart';
 import 'keyboard_listener/keyboard_listener_app.dart';
 import 'nav_examples/imperative_nav_tests.dart';
 import 'optimized_drag_stack/optimized_drag_stack.dart';
-import 'travel_card_opening/travel_cards_demo_main.dart';
+import 'travel_card_opening/travel_cards_demo.dart';
 
 class AppModel extends ChangeNotifier {
   static String kVersion = "0.1.2";
