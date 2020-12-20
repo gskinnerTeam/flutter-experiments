@@ -1,3 +1,3 @@
-CALL flutter build web
-CALL del .\docs /F /Q
-CALL xcopy .\build\web .\docs /E /F /Q /Y
+call flutter build web
+call del .\docs /F /Q
+call xcopy .\build\web .\docs /E /F /Q /Y

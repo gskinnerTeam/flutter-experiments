@@ -89,7 +89,7 @@ class _MenuBtn extends StatelessWidget {
           width: double.infinity,
           child: Text(
             label ?? "",
-            style: TextStyle(fontWeight: FontWeight.w400),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
           ),
         ),
         onPressed: onPressed);

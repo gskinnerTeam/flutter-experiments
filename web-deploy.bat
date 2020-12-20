@@ -1,2 +1,2 @@
-CALL web-build.bat
-CALL web-push.bat
+call web-build.bat
+call web-push.bat
