@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'card_data.dart';
 import '_shared.dart';
@@ -43,14 +46,13 @@ class _TravelCardState extends State<TravelCard> {
 
   @override
   Widget build(BuildContext context) {
-    bool showMouseOverEffect = _isMouseOver && widget.onPressed != null;
+    bool isClickable = _isMouseOver && widget.onPressed != null;
     Duration mouseOverDuration = Duration(milliseconds: 700);
     // Cards that are clickable will appear dimmed, until you mouse over, but we don't want to apply this logic to non-clickable cards.
     double overlayOpacity = 0;
     if (widget.onPressed != null) {
       overlayOpacity = _isMouseOver ? 0 : .3;
     }
-
     TextDirection dir = Directionality.of(context);
     Alignment largeModeAlign = dir == TextDirection.ltr ? Alignment.bottomRight : Alignment.bottomLeft;
     Alignment smallModeAlign = dir == TextDirection.ltr ? Alignment.bottomLeft : Alignment.bottomRight;
@@ -60,7 +62,9 @@ class _TravelCardState extends State<TravelCard> {
         child: widget.isSelected
             ? Container(color: Colors.white.withOpacity(.2))
             : MouseRegion(
+                cursor: isClickable ? SystemMouseCursors.click : MouseCursor.defer,
                 onEnter: (_) => isOver = true,
+                onHover: (_) => isOver = true,
                 onExit: (_) => isOver = false,
                 child: GestureDetector(
                   onTap: _handlePressed,
@@ -71,9 +75,9 @@ class _TravelCardState extends State<TravelCard> {
                       duration: mouseOverDuration,
                       beginScale: 1,
                       // Animated scale for when we mouse-over
-                      scale: showMouseOverEffect ? 1.1 : 1,
+                      scale: isClickable ? 1.1 : 1,
                       // Use animatedBuilder to show another scale effect when the list scrolls
-                      child: ScrollingListImage(widget.scrollController, widget.data.url),
+                      child: ScrollableListImage(widget.scrollController, widget.data.url),
                     ),
 
                     /// /////////////////////////////
@@ -89,46 +93,21 @@ class _TravelCardState extends State<TravelCard> {
                     /// Text Content
                     Container(
                       padding: EdgeInsets.all(24),
-                      alignment: widget.largeMode ? largeModeAlign : Alignment.bottomLeft,
+                      alignment: widget.largeMode ? largeModeAlign : smallModeAlign,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: widget.largeMode ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                         children: [
-                          // Large mode should FadeIn the content
                           if (widget.largeMode) ...{
-                            //White Line
-                            FadeInUp(
-                              delay: Duration(milliseconds: 100),
-                              child: Container(width: 30, height: 3, color: Colors.white),
-                            ),
-                            SizedBox(height: 8),
-                            // Desc
-                            FadeInUp(
-                              delay: Duration(milliseconds: 200),
-                              child: Text(widget.data.desc.toUpperCase(), style: descStyle, maxLines: 1),
-                            ),
-                            SizedBox(height: 8),
-                            // Title
-                            FadeInUp(
-                                delay: Duration(milliseconds: 300),
-                                child: Text(widget.data.title.toUpperCase(), style: titleStyle)),
-                          }
-                          // Small mode should just show the content without animation
-                          else ...{
-                            //White Line
-                            Container(width: 30, height: 3, color: Colors.white),
-                            SizedBox(height: 8),
-                            // Desc
-                            Text(widget.data.desc.toUpperCase(), style: descStyle, maxLines: 1),
-                            SizedBox(height: 8),
-                            // Title
-                            Text(widget.data.title.toUpperCase(), style: titleStyle),
+                            _LargeViewContent(state: this),
+                          } else ...{
+                            _SmallViewContent(state: this)
                           }
                         ],
                       ),
                     ),
                     // Show a border on mouseOver
-                    if (showMouseOverEffect)
+                    if (isClickable)
                       Positioned.fill(
                         child: FadeIn(
                           child: RoundedBorder(),
@@ -142,19 +121,95 @@ class _TravelCardState extends State<TravelCard> {
   }
 }
 
+class ScrollableListCard extends StatelessWidget {
+  const ScrollableListCard({Key key, @required this.scrollController, @required this.child}) : super(key: key);
+  final Widget child;
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext _) {
+    if (scrollController == null) return child;
+    return LayoutBuilder(
+      builder: (_, constraints) => AnimatedBuilder(
+        animation: scrollController,
+        child: child,
+        builder: (context, cachedChild) {
+          Size size = ContextUtils.getSize(context);
+          Offset pos = ContextUtils.localToGlobal(context);
+          Size viewSize = MediaQuery.of(context).size;
+          double amtOnScreen = max(0, viewSize.height - pos.dy) / (size.height * .35);
+          return Transform.scale(scale: min(1, .7 + amtOnScreen * .3), child: cachedChild);
+        },
+      ),
+    );
+  }
+}
+
+class _SmallViewContent extends StatelessWidget {
+  const _SmallViewContent({Key key, this.state}) : super(key: key);
+  final _TravelCardState state;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        //White Line
+        Container(width: 30, height: 3, color: Colors.white),
+        SizedBox(height: 8),
+        // Desc
+        Text(state.widget.data.desc.toUpperCase(), style: state.descStyle, maxLines: 1),
+        SizedBox(height: 8),
+        // Title
+        Text(state.widget.data.title.toUpperCase(), style: state.titleStyle),
+      ],
+    );
+  }
+}
+
+class _LargeViewContent extends StatelessWidget {
+  const _LargeViewContent({Key key, this.state}) : super(key: key);
+  final _TravelCardState state;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        //White Line
+        FadeInUp(
+          delay: Duration(milliseconds: 100),
+          child: Container(width: 30, height: 3, color: Colors.white),
+        ),
+        SizedBox(height: 8),
+        // Desc
+        FadeInUp(
+          delay: Duration(milliseconds: 200),
+          child: Text(state.widget.data.desc.toUpperCase(), style: state.descStyle, maxLines: 1),
+        ),
+        SizedBox(height: 8),
+        // Title
+        FadeInUp(
+            delay: Duration(milliseconds: 300),
+            child: Text(state.widget.data.title.toUpperCase(), style: state.titleStyle)),
+      ],
+    );
+  }
+}
+
 // Listens to a scrollController, and scales up based on it's Y position on the screen.
 // Todo: Maybe this should take an Axis?
-class ScrollingListImage extends StatefulWidget {
-  const ScrollingListImage(this.scrollController, this.url, {Key key, this.scaleAmt}) : super(key: key);
+class ScrollableListImage extends StatefulWidget {
+  const ScrollableListImage(this.scrollController, this.url, {Key key, this.scaleAmt}) : super(key: key);
   final String url;
   final ScrollController scrollController;
   final double scaleAmt;
 
   @override
-  _ScrollingListImageState createState() => _ScrollingListImageState();
+  _ScrollableListImageState createState() => _ScrollableListImageState();
 }
 
-class _ScrollingListImageState extends State<ScrollingListImage> {
+class _ScrollableListImageState extends State<ScrollableListImage> {
   Offset _globalPos = Offset.zero;
   @override
   Widget build(BuildContext context) {
