@@ -21,7 +21,7 @@ class _TravelCardsDemoState extends State<TravelCardsDemo> {
         body: Stack(
           fit: StackFit.expand,
           children: [
-            /// Main Content
+            // Main Content
             Positioned.fill(
               top: 30,
               child: TravelCardStack(),
