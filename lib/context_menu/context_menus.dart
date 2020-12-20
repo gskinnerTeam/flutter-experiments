@@ -13,12 +13,13 @@ class ContextMenuCard extends StatelessWidget {
         width: 210,
         padding: EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            border: Border.all(color: Colors.grey.shade400, width: 1),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(.05), offset: Offset(3, 3), blurRadius: 3),
-              BoxShadow(color: Colors.black.withOpacity(.03), offset: Offset(3, 3), blurRadius: 6),
-            ]),
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade400, width: 1),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(.05), offset: Offset(3, 3), blurRadius: 3),
+            BoxShadow(color: Colors.black.withOpacity(.03), offset: Offset(3, 3), blurRadius: 6),
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
