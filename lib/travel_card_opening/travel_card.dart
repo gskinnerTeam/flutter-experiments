@@ -43,7 +43,7 @@ class _TravelCardState extends State<TravelCard> {
 
   @override
   Widget build(BuildContext context) {
-    bool enableMouseOverEffect = _isMouseOver && widget.onPressed != null;
+    bool showMouseOverEffect = _isMouseOver && widget.onPressed != null;
     Duration mouseOverDuration = Duration(milliseconds: 700);
     // Cards that are clickable will appear dimmed, until you mouse over, but we don't want to apply this logic to non-clickable cards.
     double overlayOpacity = 0;
@@ -57,8 +57,9 @@ class _TravelCardState extends State<TravelCard> {
     return RoundedCard(
       child: AnimatedSwitcher(
         duration: Duration(milliseconds: widget.isSelected ? 0 : 200),
-        child: widget.isSelected == false
-            ? MouseRegion(
+        child: widget.isSelected
+            ? Container(color: Colors.white.withOpacity(.2))
+            : MouseRegion(
                 onEnter: (_) => isOver = true,
                 onExit: (_) => isOver = false,
                 child: GestureDetector(
@@ -70,7 +71,7 @@ class _TravelCardState extends State<TravelCard> {
                       duration: mouseOverDuration,
                       beginScale: 1,
                       // Animated scale for when we mouse-over
-                      scale: enableMouseOverEffect ? 1.1 : 1,
+                      scale: showMouseOverEffect ? 1.1 : 1,
                       // Use animatedBuilder to show another scale effect when the list scrolls
                       child: ScrollingListImage(widget.scrollController, widget.data.url),
                     ),
@@ -88,44 +89,54 @@ class _TravelCardState extends State<TravelCard> {
                     /// Text Content
                     Container(
                       padding: EdgeInsets.all(24),
-                      alignment: widget.largeMode ? largeModeAlign : smallModeAlign,
+                      alignment: widget.largeMode ? largeModeAlign : Alignment.bottomLeft,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: widget.largeMode ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                         children: [
-                          //White Line
-                          FadeInUp(
-                            delay: Duration(milliseconds: 100),
-                            child: Container(width: 30, height: 3, color: Colors.white),
-                          ),
-                          SizedBox(height: 8),
-                          // Desc
-                          FadeInUp(
-                            delay: Duration(milliseconds: 200),
-                            child: Text(widget.data.desc.toUpperCase(), style: descStyle, maxLines: 1),
-                          ),
-                          SizedBox(height: 8),
-                          // Title
-                          FadeInUp(
-                              delay: Duration(milliseconds: 300),
-                              child: Text(widget.data.title.toUpperCase(), style: titleStyle)),
+                          // Large mode should FadeIn the content
+                          if (widget.largeMode) ...{
+                            //White Line
+                            FadeInUp(
+                              delay: Duration(milliseconds: 100),
+                              child: Container(width: 30, height: 3, color: Colors.white),
+                            ),
+                            SizedBox(height: 8),
+                            // Desc
+                            FadeInUp(
+                              delay: Duration(milliseconds: 200),
+                              child: Text(widget.data.desc.toUpperCase(), style: descStyle, maxLines: 1),
+                            ),
+                            SizedBox(height: 8),
+                            // Title
+                            FadeInUp(
+                                delay: Duration(milliseconds: 300),
+                                child: Text(widget.data.title.toUpperCase(), style: titleStyle)),
+                          }
+                          // Small mode should just show the content without animation
+                          else ...{
+                            //White Line
+                            Container(width: 30, height: 3, color: Colors.white),
+                            SizedBox(height: 8),
+                            // Desc
+                            Text(widget.data.desc.toUpperCase(), style: descStyle, maxLines: 1),
+                            SizedBox(height: 8),
+                            // Title
+                            Text(widget.data.title.toUpperCase(), style: titleStyle),
+                          }
                         ],
                       ),
                     ),
-                    if (enableMouseOverEffect)
+                    // Show a border on mouseOver
+                    if (showMouseOverEffect)
                       Positioned.fill(
                         child: FadeIn(
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: Colors.white, width: 3)),
-                          ),
+                          child: RoundedBorder(),
                         ),
                       ),
                   ]),
                 ),
-              )
-            : Container(color: Colors.white.withOpacity(.2)),
+              ),
       ),
     );
   }

@@ -11,6 +11,18 @@ class RoundedCard extends StatelessWidget {
       );
 }
 
+class RoundedBorder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white, width: 3),
+      ),
+    );
+  }
+}
+
 class AnimatedScale extends StatelessWidget {
   const AnimatedScale(
       {Key key, @required this.child, @required this.scale, @required this.duration, this.beginScale, this.curve})
