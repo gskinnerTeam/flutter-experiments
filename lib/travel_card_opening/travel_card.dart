@@ -18,7 +18,7 @@ class TravelCard extends StatefulWidget {
   }) : super(key: key);
   final CardData data;
   final bool isSelected;
-  final largeMode;
+  final bool largeMode;
   final ScrollController scrollController;
   final void Function(Offset globalPos) onPressed;
 
@@ -237,6 +237,6 @@ class _ScrollableListImageState extends State<ScrollableListImage> {
     try {
       _globalPos = ContextUtils.localToGlobal(context);
     } catch (e) {}
-    return (_globalPos.dy / MediaQuery.of(context).size.height).clamp(0.0, 1.0);
+    return (_globalPos.dy / MediaQuery.of(context).size.height).clamp(0.0, 1.0) as double;
   }
 }

@@ -66,7 +66,7 @@ class AppRouterDelegate extends RouterDelegate<NavModel> with ChangeNotifier {
   Future<bool> popRoute() async => navModel.navigateUp();
 
   @override
-  Future<void> setNewRoutePath(newNav) async => navModel.tabIndex = newNav.tabIndex;
+  Future<void> setNewRoutePath(NavModel newNav) async => navModel.tabIndex = newNav.tabIndex;
 }
 
 class AppRouteParser extends RouteInformationParser<NavModel> {

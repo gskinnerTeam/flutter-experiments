@@ -28,14 +28,14 @@ class ContextMenuRegion extends StatelessWidget {
 }
 
 // The main overlay class, holds a Stack which contains the main app, contextMenu and contextModal
-class ContextOverlay extends StatefulWidget {
-  const ContextOverlay({Key key, this.child}) : super(key: key);
+class ContextMenuOverlay extends StatefulWidget {
+  const ContextMenuOverlay({Key key, this.child}) : super(key: key);
   final Widget child;
   @override
-  _ContextOverlayState createState() => _ContextOverlayState();
+  _ContextMenuOverlayState createState() => _ContextMenuOverlayState();
 }
 
-class _ContextOverlayState extends State<ContextOverlay> {
+class _ContextMenuOverlayState extends State<ContextMenuOverlay> {
   Widget _currentMenu;
   Size _menuSize = Size.zero;
   Offset _mousePos = Offset.zero;

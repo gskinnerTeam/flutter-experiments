@@ -26,6 +26,7 @@ class OpeningContainer extends StatefulWidget {
   _OpeningContainerState createState() => _OpeningContainerState();
 }
 
+//TODO: Fix this for RTL not quite working right
 class _OpeningContainerState extends State<OpeningContainer> with SingleTickerProviderStateMixin {
   Offset get offset => widget.topLeftOffset;
   Size get closedSize => widget.closedSize;

@@ -9,7 +9,7 @@ class ContextMenuTestApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String url = "https://miro.medium.com/max/1400/0*nZzXEwKpXHOS2OpG";
-    return ContextOverlay(
+    return ContextMenuOverlay(
       child: Stack(
         children: [
           Column(

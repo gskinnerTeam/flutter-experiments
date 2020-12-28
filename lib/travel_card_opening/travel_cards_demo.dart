@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '_shared.dart';
 import 'card_data.dart';
 import 'opening_card.dart';
@@ -138,32 +139,29 @@ class _TravelCardStackState extends State<TravelCardStack> {
               /// List of TravelCards that report their globalOffset when clicked
               Container(
                 // List defines the width of the items
-                width: boxSize.width + 12,
+                width: boxSize.width + 24,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 // Just a basic listView
-                child: ListView(
-                  controller: _scrollController,
-                  cacheExtent: 1000,
-                  children: [
-                    SizedBox(height: 24), //Padding at the top of the list
-                    ...cards.map((CardData data) {
-                      bool isSelected = _currentCard == data;
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: Container(
-                          height: boxSize.height, // Define height for the card, works in tandem with the list-width
-                          // Travel Card
-                          child: TravelCard(
-                            data,
-                            isSelected: isSelected,
-                            scrollController: _scrollController,
-                            //Pass null if we're currently selected to disable the btn
-                            onPressed: isSelected ? null : (Offset pos) => _handleItemClicked(pos, data),
-                          ),
-                        ),
-                      );
-                    })
-                  ],
+                child: ScrollablePositionedList.separated(
+                  itemCount: cards.length + 1,
+                  separatorBuilder: (_, __) => SizedBox(height: 12),
+                  itemBuilder: (_, index) {
+                    if (index == 0) return SizedBox(height: 24);
+                    index--; // First index is a spacer, so remove it for the true list index
+                    CardData data = cards[index];
+                    bool isSelected = data == _currentCard;
+                    return Container(
+                      height: boxSize.height, // Define height for the card, works in tandem with the list-width
+                      // Travel Card
+                      child: TravelCard(
+                        data,
+                        isSelected: isSelected,
+                        scrollController: _scrollController,
+                        //Pass null if we're currently selected to disable the btn
+                        onPressed: isSelected ? null : (Offset pos) => _handleItemClicked(pos, data),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

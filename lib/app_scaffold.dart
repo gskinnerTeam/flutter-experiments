@@ -10,7 +10,10 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppModel model = context.watch();
-    return ContextOverlay(
+    return ContextMenuRegion(
+      contextMenu: AppContextMenu(
+        srcUrl: model.currentSrcUrl,
+      ),
       child: Scaffold(
         body: AnimatedSwitcher(
           duration: Duration(milliseconds: 100),
@@ -48,14 +51,16 @@ class _ExperimentView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppModel model = context.watch();
-    return Row(children: [
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // Side Menu
-      Column(
-        children: [
-          SizedBox(height: 50),
-          _MenuBtn(label: "HOME", onPressed: (_) => model.currentPage = null),
-          _MainMenu()
-        ],
+      SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 50),
+            _MenuBtn(label: "HOME", onPressed: (_) => model.currentPage = null),
+            _MainMenu(),
+          ],
+        ),
       ),
       // Page Area
       Flexible(
@@ -102,7 +107,12 @@ class _MenuBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle style = TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal);
-    Widget content = SizedBox(width: 200, height: 50, child: Center(child: Text(label, style: style)));
+    bool isNarrow = MediaQuery.of(context).size.width < 500;
+    Widget content = SizedBox(
+      width: isNarrow ? 100 : 200,
+      height: 50,
+      child: Center(child: Text(label, style: style, textAlign: TextAlign.center)),
+    );
     return isSelected
         ? content
         : OutlineButton(

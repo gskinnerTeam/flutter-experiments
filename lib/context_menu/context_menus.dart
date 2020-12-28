@@ -4,6 +4,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'context_menu_overlay.dart';
 
+String checkUrl(String url) {
+  bool needsPrefix = !url.contains("http://") && !url.contains("https://");
+  return (needsPrefix) ? "https://" + url : url;
+}
+
+void launchUrl(String url) => launch(checkUrl(url)).catchError((Object e) => print(e));
+
 class ContextMenuCard extends StatelessWidget {
   const ContextMenuCard({Key key, this.children}) : super(key: key);
   final List<Widget> children;
@@ -43,27 +50,40 @@ class ImageContextMenu extends _BaseContextMenu {
   }
 }
 
+class AppContextMenu extends _BaseContextMenu {
+  const AppContextMenu({Key key, @required this.srcUrl}) : super(key: key);
+  final String srcUrl;
+
+  void _handleViewSourcePressed() async => launchUrl(srcUrl);
+
+  @override
+  Widget build(BuildContext context) {
+    bool noSrcUrl = srcUrl == null;
+    return ContextMenuCard(
+      children: [
+        _MenuBtn("View Source", onPressed: noSrcUrl ? null : () => handlePress(context, _handleViewSourcePressed)),
+      ],
+    );
+  }
+}
+
 class LinkContextMenu extends _BaseContextMenu {
   const LinkContextMenu({Key key, @required this.url}) : super(key: key);
   final String url;
 
-  String getUrl() {
-    String url = this.url;
-    bool needsPrefix = !url.contains("http://") && !url.contains("https://");
-    return (needsPrefix) ? "https://" + url : url;
-  }
+  void _handleNewWindowPressed() async => launchUrl(url);
 
-  void _handleNewWindowPressed() async => launch(getUrl()).catchError((Object e) => print(e));
-
-  void _handleClipboardPressed() async => Clipboard.setData(ClipboardData(text: getUrl()));
+  void _handleClipboardPressed() async => Clipboard.setData(ClipboardData(text: checkUrl(url)));
 
   @override
   Widget build(BuildContext context) {
+    bool noUrl = url == null;
     return ContextMenuCard(
       children: [
         // Wrap each handler with a handlePress() call, this closes the menu when we click something
-        _MenuBtn("Open link in new window", onPressed: () => handlePress(context, _handleNewWindowPressed)),
-        _MenuBtn("Copy link address", onPressed: () => handlePress(context, _handleClipboardPressed))
+        _MenuBtn("Open link in new window",
+            onPressed: noUrl ? null : () => handlePress(context, _handleNewWindowPressed)),
+        _MenuBtn("Copy link address", onPressed: noUrl ? null : () => handlePress(context, _handleClipboardPressed))
       ],
     );
   }

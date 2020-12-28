@@ -1,0 +1,17 @@
+analyzer:
+  language:
+    strict-inference: true
+    strict-raw-types: true
+
+  strong-mode:
+    implicit-casts: false
+  errors:
+    missing_required_param: error
+    inference_failure_on_untyped_parameter: error
+linter:
+  rules:
+    always-specify-types: true
+    always_declare_return_types: true
+    prefer-relative-imports: true
+    avoid_types_on_closure_parameters: false
+    prefer_generic_function_type_aliases: true,
