@@ -5,6 +5,7 @@ import 'package:flutter_experiments/stateful_props/props/future_prop.dart';
 import 'package:flutter_experiments/stateful_props/props/gesture_prop.dart';
 import 'package:flutter_experiments/stateful_props/props/layout_prop.dart';
 import 'package:flutter_experiments/stateful_props/stateful_props_widget.dart';
+import 'package:provider/provider.dart';
 
 import '../stateful_prop_demo.dart';
 import '../stateful_props_mixin.dart';
@@ -17,10 +18,13 @@ import '../stateful_props_mixin.dart';
 class BasicBuilderExample extends PropsWidget {
   @override
   Widget buildWithProps(BuildContext context) {
-    return ComparisonStack(
-      //classic: BasicBuilderClassic(),
-      //stateful: BasicBuilderStateful(),
-      stateless: BasicBuilderStateless(),
+    return Provider<int>.value(
+      value: 0,
+      child: ComparisonStack(
+        //classic: BasicBuilderClassic(),
+        //stateful: BasicBuilderStateful(),
+        stateless: BasicBuilderStateless(),
+      ),
     );
   }
 }
@@ -97,7 +101,7 @@ class _BasicBuilderStatefulState extends State<BasicBuilderStateful> with Statef
     bool hasLoaded = !someFuture.isWaiting;
     int loadedValue = someFuture.value;
     double maxWidth = layout.constraints.maxWidth;
-
+    //print(context.watch<int>());
     return Container(
       alignment: Alignment.center,
       child: Text("${maxWidth}, future=${hasLoaded ? loadedValue : "Loading..."}"),
@@ -129,7 +133,7 @@ class BasicBuilderStateless extends PropsWidget {
     bool hasLoaded = !future.isWaiting;
     int loadedValue = future.value;
     double maxWidth = use(_layout).constraints.maxWidth;
-
+    print(context.read<int>());
     return Container(
       alignment: Alignment.center,
       child: Text("${maxWidth}, future=${hasLoaded ? loadedValue : "Loading..."}"),

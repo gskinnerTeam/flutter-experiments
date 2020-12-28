@@ -75,11 +75,6 @@ abstract class PropsWidget<W extends Widget> extends StatelessWidget {
 
   // Use a property that has been previously added or sync'd
   T use<T extends StatefulProp<dynamic>>(Ref<T> key) {
-    // Do a lazy call to init props when the first one is used.
-    if (_manager.value.initPropsComplete == false) {
-      initProps();
-      _manager.value.initPropsComplete = true;
-    }
     return _manager.value.useProp(key);
   }
 
@@ -148,6 +143,7 @@ class _PropsWidgetElement<W extends PropsWidget> extends StatelessElement {
   // Track mounted as a quality-of-life improvement for devs. Useful when checking Futures that may outlive their context.
   @override
   void mount(Element parent, dynamic newSlot) {
+    (_propsManager.widget as PropsWidget).initProps();
     super.mount(parent, newSlot);
     _propsManager.mounted = true;
   }

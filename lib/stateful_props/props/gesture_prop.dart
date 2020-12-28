@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../stateful_properties.dart';
@@ -5,8 +6,18 @@ import '../stateful_properties.dart';
 // Core GestureDetector Property
 // Usage: initProperty((_, __) => GestureProp(onTapDown: _handleTap, onTapUp: ..., etc));
 class GestureProp extends StatefulProp<GestureProp> {
-  GestureProp({this.onTap, this.onLongPress, this.behavior = HitTestBehavior.opaque});
-  final HitTestBehavior behavior;
+  GestureProp(
+      {this.behavior = HitTestBehavior.opaque,
+      this.dragStartBehavior = DragStartBehavior.start,
+      this.excludeFromSemantics = false,
+      this.key,
+      this.onTap,
+      this.onLongPress});
+  HitTestBehavior behavior;
+  DragStartBehavior dragStartBehavior;
+  bool excludeFromSemantics;
+  Key key;
+
   // Callbacks
   void Function() onTap;
   void Function() onLongPress;
@@ -14,7 +25,10 @@ class GestureProp extends StatefulProp<GestureProp> {
   @override
   Widget Function() getBuilder(Widget Function() childBuilder) {
     return () => GestureDetector(
+          key: key,
           behavior: behavior,
+          dragStartBehavior: dragStartBehavior,
+          excludeFromSemantics: excludeFromSemantics,
           // TODO: Implement all the other 20+ callbacks for gestureDetector
           onTap: () => onTap?.call(),
           onLongPress: () => onLongPress?.call(),

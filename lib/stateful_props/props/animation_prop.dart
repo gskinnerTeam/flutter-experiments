@@ -16,10 +16,10 @@ class AnimationProp extends StatefulProp<AnimationProp> implements TickerProvide
     this.onTick,
     this.curve = Curves.linear,
   });
+  TickerProvider vsync;
   final bool autoBuild;
   final bool autoStart;
   double seconds;
-  TickerProvider vsync;
   Curve curve;
 
   // Callbacks
@@ -33,14 +33,15 @@ class AnimationProp extends StatefulProp<AnimationProp> implements TickerProvide
   bool get isGoingForward => controller.status == AnimationStatus.forward;
   bool get isGoingReverse => controller.status == AnimationStatus.reverse;
 
-  Animation<T> addTween<T>(Tween<T> tween, {Curve curve: Curves.linear}) =>
+  // Utilities to make tween usage cleaner  final t = anim1Prop.addDoubleTween(curve: Curves.easeOut)
+  Animation<T> tween<T>(Tween<T> tween, {Curve curve: Curves.linear}) =>
       tween.animate(CurvedAnimation(parent: _controller, curve: curve));
 
-  Animation<double> addDoubleTween({double begin: 0.0, double end: 1.0, Curve curve: Curves.linear}) =>
-      addTween(Tween<double>(begin: begin, end: end), curve: curve);
+  Animation<double> tweenDouble({double begin: 0.0, double end: 1.0, Curve curve: Curves.linear}) =>
+      tween(Tween<double>(begin: begin, end: end), curve: curve);
 
-  Animation<int> addIntTween({int begin: 0, int end: 100, Curve curve: Curves.linear}) =>
-      addTween(IntTween(begin: begin, end: end), curve: curve);
+  Animation<int> tweenInt({int begin: 0, int end: 100, Curve curve: Curves.linear}) =>
+      tween(IntTween(begin: begin, end: end), curve: curve);
 
   // Internal State
   Ticker _ticker;

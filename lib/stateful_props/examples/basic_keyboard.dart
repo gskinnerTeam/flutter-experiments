@@ -43,7 +43,7 @@ class _KeyboardExampleState extends State<BasicKeyboardStateful> with StatefulPr
   @override
   void initProps() {
     FocusProp nodeProp = addProp(FocusProp(canRequestFocus: false));
-    addProp(KeyboardProp(onKey: _handleKeyDown, focusNode: nodeProp.node));
+    addProp(KeyboardProp(onPressed: _handleKeyDown, focusNode: nodeProp.node));
   }
 
   void _handleKeyDown(RawKeyEvent event) => setState(() => _lastkeyPressed = event);
@@ -74,7 +74,7 @@ class BasicKeyboardStateless extends PropsWidget {
   @override
   void initProps() {
     final focus = addProp(_focus, FocusProp(canRequestFocus: false));
-    addProp(_keyboard, KeyboardProp(onKey: _handleKeyDown, focusNode: focus.node));
+    addProp(_keyboard, KeyboardProp(onPressed: _handleKeyDown, focusNode: focus.node));
     addProp(_lastKeyPressed, ValueProp<RawKeyEvent>(null));
   }
 

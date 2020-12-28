@@ -1,18 +1,31 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../stateful_properties.dart';
 
 /// Wraps MouseRegions. Reports current position of mouse in
 /// both local and global coords. Also provides state like .isHovered,
 /// and normalized (0-1) mouse coords, which it calculates using MediaQuery.size
+/// Add: Key, Cursor,
 /// TODO: Would be nice if this also stored local-relative position. Would need to use LayoutBuilder or `context.findRenderBox()` I think?
 class MouseRegionProp extends StatefulProp<MouseRegionProp> {
-  MouseRegionProp({this.onHover, this.onEnter, this.onExit});
+  MouseRegionProp({
+    this.key,
+    this.onEnter,
+    this.onExit,
+    this.onHover,
+    this.cursor = MouseCursor.defer,
+    this.opaque = true,
+  });
+  Key key;
+  MouseCursor cursor;
+  bool opaque;
+
   // Callbacks
-  final void Function(PointerHoverEvent event) onHover;
-  final void Function(PointerEnterEvent event) onEnter;
-  final void Function(PointerExitEvent event) onExit;
+  void Function(PointerHoverEvent event) onHover;
+  void Function(PointerEnterEvent event) onEnter;
+  void Function(PointerExitEvent event) onExit;
 
   // Helper methods
   Offset get position => _pos;
@@ -33,6 +46,9 @@ class MouseRegionProp extends StatefulProp<MouseRegionProp> {
   Widget Function() getBuilder(Widget Function() childBuilder) {
     _viewSize = MediaQuery.of(context).size;
     return () => MouseRegion(
+          key: key,
+          cursor: cursor,
+          opaque: opaque,
           onEnter: (m) {
             _handleMouseUpdate(isDown: true, position: m.position, localPosition: m.localPosition);
             onEnter?.call(m);

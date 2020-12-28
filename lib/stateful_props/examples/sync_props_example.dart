@@ -73,7 +73,7 @@ class _BasicSyncStatefulState extends State<BasicSyncStateful> with StatefulProp
       tapAnim.controller.forward();
     });
     // Use syntactic sugar to easily add a tween curves and settings
-    countTween = tapAnim.addIntTween(curve: Curves.easeOut, begin: 1, end: 10);
+    countTween = tapAnim.tweenInt(curve: Curves.easeOut, begin: 1, end: 10);
     // Listen for mouseInfo
     mouseProp = addProp(MouseRegionProp());
     // Listen for tap
@@ -126,7 +126,7 @@ class BasicSyncStateless extends PropsWidget<BasicSyncStateless> {
       tapAnim.controller.forward();
     });
     // Use syntactic sugar to easily add a tween curves and settings
-    Animation<int> intTween = tapAnim.addIntTween(curve: Curves.easeOut, begin: 1, end: 10);
+    Animation<int> intTween = tapAnim.tweenInt(curve: Curves.easeOut, begin: 1, end: 10);
     addProp(_countTween, ValueProp(intTween));
     // Listen for mouseInfo
     addProp(_mouseProp, MouseRegionProp());

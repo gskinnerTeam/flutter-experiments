@@ -7,28 +7,28 @@ import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
 // We basically want a lazy addProp and syncProp implementation... where something is added on request, and only once.
 class KeyboardProp extends StatefulProp<KeyboardProp> {
   KeyboardProp({
-    this.key,
     @required this.focusNode,
     this.autofocus = true,
     this.includeSemantics = true,
-    this.onKey,
+    this.key,
+    this.onPressed,
   });
-  final Key key;
   final FocusNode focusNode;
   final bool autofocus;
   final bool includeSemantics;
+  final Key key;
 
   // Callbacks
-  ValueChanged<RawKeyEvent> onKey;
+  ValueChanged<RawKeyEvent> onPressed;
 
   @override
   Widget Function() getBuilder(Widget Function() childBuilder) {
     return () => RawKeyboardListener(
+          key: key,
           focusNode: focusNode,
           autofocus: autofocus,
           includeSemantics: includeSemantics,
-          onKey: onKey,
-          key: key,
+          onKey: onPressed,
           child: FocusScope(child: childBuilder(), autofocus: autofocus),
         );
   }
