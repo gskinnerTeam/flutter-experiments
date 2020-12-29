@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
+import 'package:flutter_experiments/stateful_props/stateful_props_manager.dart';
 
 class FocusProp extends StatefulProp<FocusProp> {
   FocusProp(
@@ -38,16 +38,16 @@ class FocusProp extends StatefulProp<FocusProp> {
 
   @override
   void update(FocusProp newProp) {
-    if (didChange(debugLabel, newProp.debugLabel)) {
+    if (compareValuesForChange(debugLabel, newProp.debugLabel)) {
       _node.debugLabel = debugLabel = newProp.debugLabel;
     }
-    if (didChange(skipTraversal, newProp.skipTraversal)) {
+    if (compareValuesForChange(skipTraversal, newProp.skipTraversal)) {
       skipTraversal = _node.skipTraversal = newProp.skipTraversal;
     }
-    if (didChange(canRequestFocus, newProp.canRequestFocus)) {
+    if (compareValuesForChange(canRequestFocus, newProp.canRequestFocus)) {
       canRequestFocus = _node.canRequestFocus = newProp.canRequestFocus;
     }
-    if (didChange(canRequestFocus, newProp.descendantsAreFocusable)) {
+    if (compareValuesForChange(canRequestFocus, newProp.descendantsAreFocusable)) {
       descendantsAreFocusable = _node.descendantsAreFocusable = newProp.descendantsAreFocusable;
     }
     // Callbacks

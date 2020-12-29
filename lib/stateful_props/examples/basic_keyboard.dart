@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_experiments/stateful_props/props/focus_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/keyboard_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/primitive_props.dart';
-import 'package:flutter_experiments/stateful_props/stateful_props_widget.dart';
 
 import '../stateful_prop_demo.dart';
-import '../stateful_props_mixin.dart';
+import '../stateful_props.dart';
 
 /// ///////////////////////////////////////////////////
 /// Basic Keyboard Example

@@ -9,18 +9,20 @@ extension DurationToSecondsExtension on Duration {
   double get seconds => this.inMilliseconds * .001;
 }
 
-// The core engine that manages props for both the StatefulPropsMixin and StatefulPropsWidget:
-// * maintains a list of each Prop
-// * calls lifecycle methods on each Prop (init, didUpdate, dispose)
-// * Requires setState, context and widget instances. Provided by [StatefulPropsMixin] or [StatefulPropsWidget]
+// The core manager that tracks props for both the StatefulPropsMixin and PropsWidget.
+// One of these exists for each Widget, and it is basically just a wrapper around a list of StatefulProps.
+// * Maintains a list of each Prop `List<StatefulProp> _values = [];`
+// * Also maintains a `Map<Ref, StatefulProp> _propsByKey` which is used by the PropWidget to track variables.
+// * Requires setState, context and widget injected into it (provided by [StatefulPropsMixin] or [PropsWidget])
 // * Injects `context` and `setState` into each Prop
+// * Calls lifecycle methods on each Prop (init, didUpdate, dispose)
 class StatefulPropsManager<W extends Widget> {
   static bool logDuplicateRefWarnings = true;
 
   // List of all props that have been registered.
   // Props can not be removed, only added. Their lifecycle is entirely bound to the owning State or Widget.
   List<StatefulProp<dynamic>> _values = [];
-  Map<Object, StatefulProp<dynamic>> _propsByKey = {};
+  Map<Ref, StatefulProp<dynamic>> _propsByKey = {};
   int buildCount = 0;
 
   // Widget/State Dependencies
@@ -29,10 +31,9 @@ class StatefulPropsManager<W extends Widget> {
   bool mounted = false;
   bool initPropsComplete = false;
 
-  BuildContext context;
-  BuildContext _lastBuilderContext;
-  BuildContext getContext() => _lastBuilderContext ?? context;
-  void registerBuildContext(BuildContext c) => _lastBuilderContext = c;
+  BuildContext _context;
+  void setContext(BuildContext value) => _context = value;
+  BuildContext getContext() => _context;
 
   // Calls addProp() and also injects the create method into the prop, so it can be called later.
   T syncProp<T>(StatefulProp<dynamic> Function(BuildContext c, W w) create, [String restoreId]) {
@@ -53,7 +54,6 @@ class StatefulPropsManager<W extends Widget> {
     prop.setState = this.setState;
     prop.addProp = addProp;
     prop.syncProp = syncProp;
-    prop.registerBuilderContext = registerBuildContext;
     _values.add(prop);
     prop.init();
     return prop as T;
@@ -97,7 +97,7 @@ class StatefulPropsManager<W extends Widget> {
   // This ensures the local build() call goes last and gets the latest state from the builders above it.
   Widget buildProps(ChildBuilder childBuild) {
     _values.forEach((prop) => childBuild = prop.getBuilder(childBuild));
-    return childBuild();
+    return childBuild(getContext());
   }
 
   // Use the current widget, to create a new Prop. Pass that new Prop to each existing one so they can update themselves.
@@ -127,8 +127,10 @@ class StatefulPropsManager<W extends Widget> {
 
 // Extend this base class to create your own StatefulProperty. Every method is optional, implement only what you need.
 // Available overrides are: init(), build(), update(), dispose(), restoreState()
-typedef ChildBuilder = Widget Function();
+typedef ChildBuilder = Widget Function(BuildContext);
 
+// Base class that all Props extend. It consists of a bunch of optional overrides (init/update/dispose/getBuilder etc),
+// and some of callbacks injected by the PropsManager (addProp, syncProp, setState etc)
 abstract class StatefulProp<T> {
   /// ////////////////////////////////
   /// Life cycle
@@ -149,11 +151,6 @@ abstract class StatefulProp<T> {
   @protected
   void dispose() {}
 
-  // Utility method to reduce boilerplate when implementing didChangeUpdates.
-  bool didChange<T>(T oldVal, T newVal) {
-    return oldVal != newVal && newVal != null;
-  }
-
   // Optional: Support Restoration; call `register()` with any RestorableValues you have internally.
   @protected
   void restoreState(void Function(RestorableProperty<Object> property, String restorationId) register) {}
@@ -161,7 +158,12 @@ abstract class StatefulProp<T> {
   /// ////////////////////////////////
   /// Internal
 
-  ///
+  // Utility method to reduce boilerplate when implementing didChangeUpdates, used by sub-classes, not meant to be overridden.
+  bool compareValuesForChange<T>(T oldVal, T newVal) {
+    return oldVal != newVal && newVal != null;
+  }
+
+  /// StateManager Hooks
   // Injected by the [StatefulPropertyMixin], create a StatefulProperty instance from a Widget
   @protected
   StatefulProp<dynamic> Function(BuildContext c, Widget widget) create;
@@ -177,10 +179,6 @@ abstract class StatefulProp<T> {
   // The Add/Sync methods are injected from the manager so props can register sub-props allowing composition
   T Function<T>(StatefulProp<dynamic> prop, [String restoreId]) addProp;
   T Function<T>(StatefulProp<dynamic> Function(BuildContext c, Widget w) create, [String restoreId]) syncProp;
-
-  // Injected by state manager, each builder needs to call this so we can get the bottom-most callback
-  // TODO: There should be a better way by passing child contexts along back to the build call
-  void Function(BuildContext context) registerBuilderContext;
 
   /// Restoration
   // Injected when calling [ StatefulPropertyMixin.registerProperty(restoreId: "foo") ]

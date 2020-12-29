@@ -1,14 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_experiments/stateful_props/props/future_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/gesture_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/layout_prop.dart';
-import 'package:flutter_experiments/stateful_props/stateful_props_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../stateful_prop_demo.dart';
-import '../stateful_props_mixin.dart';
+import '../stateful_props.dart';
 
 /// ///////////////////////////////////////////////////
 /// Basic Builder Example
@@ -38,11 +34,10 @@ class BasicBuilderClassic extends StatefulWidget {
 }
 
 class _BasicBuilderClassicState extends State<BasicBuilderClassic> {
-  Future<int> _currentFuture;
-
+  Future<int> _someFuture;
   @override
   void initState() {
-    _currentFuture = _loadData();
+    _someFuture = _loadData();
     super.initState();
   }
 
@@ -53,26 +48,18 @@ class _BasicBuilderClassicState extends State<BasicBuilderClassic> {
   Widget build(BuildContext _) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() {
-        _currentFuture = _loadData();
-      }),
+      onTap: () => setState(() => _someFuture = _loadData()),
       child: LayoutBuilder(builder: (lc, constraints) {
         return FutureBuilder<int>(
-            future: _currentFuture,
+            future: _someFuture,
             builder: (fc, snapshot) {
-              bool hasLoaded = snapshot?.connectionState != ConnectionState.waiting;
-              int loadedValue = snapshot.data;
-              double maxWidth = constraints.maxWidth;
               Size contextSize = Size(1, 1);
               RenderBox rb = fc.findRenderObject() as RenderBox;
               if (rb?.hasSize ?? false) {
                 contextSize = rb.size;
               }
               print("$this ${fc.watch<int>()}");
-              return _Content(
-                "parentWidth${maxWidth}, contextWith${contextSize.width}}",
-                "future=${hasLoaded ? loadedValue : "Loading..."}",
-              );
+              return _Content(snapshot, constraints, contextSize);
             });
       }),
     );
@@ -93,7 +80,7 @@ class _BasicBuilderStatefulState extends State<BasicBuilderStateful> with Statef
 
   @override
   void initProps() {
-    layout = addProp(LayoutProp());
+    layout = addProp(LayoutProp(measureContext: true));
     someFuture = addProp(FutureProp(_loadData()));
     addProp(TapProp(() => someFuture.future = _loadData()));
   }
@@ -103,14 +90,8 @@ class _BasicBuilderStatefulState extends State<BasicBuilderStateful> with Statef
 
   @override
   Widget buildWithProps(BuildContext context) {
-    bool hasLoaded = !someFuture.isWaiting;
-    int loadedValue = someFuture.value;
-    double maxWidth = layout.constraints.maxWidth;
     print("$this ${context.watch<int>()}");
-    return _Content(
-      "parentWidth${maxWidth}, contextWith${layout.contextSize.width}}",
-      "future=${hasLoaded ? loadedValue : "Loading..."}",
-    );
+    return _Content(someFuture.snapshot, layout.constraints, layout.contextSize);
   }
 }
 
@@ -127,9 +108,10 @@ class BasicBuilderStateless extends PropsWidget {
 
   @override
   void initProps() {
-    addProp(_layout, LayoutProp());
+    addProp(_layout, LayoutProp(measureContext: true));
     addProp(_someFuture, FutureProp(_loadData()));
     addProp(_tap, TapProp(() => someFuture.future = _loadData()));
+    print("$this ${context.watch<int>()}");
   }
 
   // Wait 1 second, return random Integer
@@ -137,24 +119,22 @@ class BasicBuilderStateless extends PropsWidget {
 
   @override
   Widget buildWithProps(BuildContext context) {
-    bool hasLoaded = !someFuture.isWaiting;
-    int loadedValue = someFuture.value;
-    double maxWidth = layout.constraints.maxWidth;
     print("$this ${context.watch<int>()}");
-    return _Content(
-      "parentWidth${maxWidth}, contextWith${layout.contextSize.width}}",
-      "future=${hasLoaded ? loadedValue : "Loading..."}",
-    );
+    return _Content(someFuture.snapshot, layout.constraints, layout.contextSize);
   }
 }
 
 /// ///////////////////////////////
 /// Shared
-Widget _Content(String _result1, String _result2) {
+Widget _Content(AsyncSnapshot<dynamic> snapshot, BoxConstraints constraints, Size contextSize) {
+  bool hasLoaded = snapshot?.connectionState != ConnectionState.waiting;
   return Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      children: [Text(_result1), Text(_result2)],
+      children: [
+        Text("parentWidth${constraints.maxWidth}, contextWith${contextSize.width}}"),
+        Text("future=${hasLoaded ? snapshot.data : "Loading..."}")
+      ],
     ),
   );
 }

@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_experiments/stateful_props/props/animation_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/gesture_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/layout_prop.dart';
-import 'package:flutter_experiments/stateful_props/stateful_props_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../stateful_prop_demo.dart';
-import '../stateful_props_mixin.dart';
+import '../stateful_props.dart';
 
 /// ///////////////////////////////////////////////////
 /// Basic Animator Example
@@ -148,7 +144,7 @@ class BasicAnimatorStateless extends PropsWidget<BasicAnimatorStateless> {
   @override
   void initProps() {
     syncProp(_anim1, (c, w) => AnimationProp(w.duration.seconds, autoStart: true));
-    syncProp(_anim2, (c, w) => AnimationProp(Provider.of<Duration>(c).seconds, autoStart: true));
+    syncProp(_anim2, (c, w) => AnimationProp(context.watch<Duration>().seconds, autoStart: true));
     addProp(_tap, TapProp(_handlePress));
   }
 

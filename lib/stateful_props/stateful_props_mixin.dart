@@ -1,9 +1,7 @@
 // This mixin is just a light proxy around lifecycle events and a wrapper around build()
 // [StatefulPropsManager] does most of the work here.
 import 'package:flutter/widgets.dart';
-
-import 'stateful_properties.dart';
-export 'stateful_properties.dart';
+import 'stateful_props_manager.dart';
 
 mixin StatefulPropsMixin<W extends StatefulWidget> on State<W> {
   StatefulPropsManager _propsManager = StatefulPropsManager<W>();
@@ -13,7 +11,7 @@ mixin StatefulPropsMixin<W extends StatefulWidget> on State<W> {
   void initState() {
     super.initState();
     // Inject stateful hooks into the manager, who will in-turn inject them into any managed Props.
-    _propsManager.context = context;
+    _propsManager.setContext(context);
     _propsManager.widget = widget;
     _propsManager.setState = setState;
     initProps();
@@ -49,7 +47,7 @@ mixin StatefulPropsMixin<W extends StatefulWidget> on State<W> {
   @protected
   Widget build(BuildContext _) {
     // Each Prop can wrap the Widget's tree with 1 or more Widgets, they are called in top-down order.
-    return _propsManager.buildProps(() => buildWithProps(_propsManager.getContext()));
+    return _propsManager.buildProps((c) => buildWithProps(c));
   }
 
   @override

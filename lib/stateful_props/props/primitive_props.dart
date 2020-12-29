@@ -1,4 +1,4 @@
-import '../stateful_properties.dart';
+import '../stateful_props_manager.dart';
 
 /// TODO: Add RestorationAPI support. Figure out how to check if a Restorable has been registered, and fallback to regular value if not.
 class IntProp extends ValueProp<int> {
@@ -16,13 +16,16 @@ class DoubleProp extends ValueProp<double> {
 }
 
 class ValueProp<T> extends StatefulProp<ValueProp<T>> {
-  ValueProp(this._value);
-
+  ValueProp(this._value, {this.onChange});
   T _value;
+  void Function(T value) onChange;
+
   T get value => _value;
   set value(T value) {
     if (value == _value) return;
-    _value = value;
-    setState(() {});
+    setState(() {
+      _value = value;
+      onChange?.call(_value);
+    });
   }
 }

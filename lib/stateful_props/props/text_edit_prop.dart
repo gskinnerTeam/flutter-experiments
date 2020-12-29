@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
+import 'package:flutter_experiments/stateful_props/stateful_props_manager.dart';
 
 class TextEditProp extends StatefulProp<TextEditProp> {
   TextEditProp({String text, this.onChanged}) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
+import 'package:flutter_experiments/stateful_props/stateful_props_manager.dart';
 
 import '../app_model.dart';
 

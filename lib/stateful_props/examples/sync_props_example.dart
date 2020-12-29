@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_experiments/stateful_props/props/animation_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/gesture_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/mouse_region_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/primitive_props.dart';
-import 'package:flutter_experiments/stateful_props/stateful_props_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../stateful_prop_demo.dart';
-import '../stateful_props_mixin.dart';
+import '../stateful_props.dart';
 
 /// ///////////////////////////////////////////////////
 /// Sync dependencies example

@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
+import 'package:flutter_experiments/stateful_props/stateful_props_manager.dart';
 
 //TODO: Update RawKeyboardProp so it can make it's own node internally... ideally it can use the Property?
 // How? We should be able use addProp and syncProp, as long as make sure to only run it once...
@@ -33,13 +33,13 @@ class KeyboardProp extends StatefulProp<KeyboardProp> {
 
   @override
   ChildBuilder getBuilder(ChildBuilder childBuilder) {
-    return () => RawKeyboardListener(
+    return (c) => RawKeyboardListener(
           key: key,
           focusNode: focusNode,
           autofocus: autofocus,
           includeSemantics: includeSemantics,
           onKey: onPressed,
-          child: FocusScope(child: childBuilder(), autofocus: autofocus),
+          child: FocusScope(child: childBuilder(c), autofocus: autofocus),
         );
   }
 }

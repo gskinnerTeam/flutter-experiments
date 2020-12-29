@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import '../stateful_properties.dart';
+import '../stateful_props_manager.dart';
 
 // Core GestureDetector Property
 // Usage: initProperty((_, __) => GestureProp(onTapDown: _handleTap, onTapUp: ..., etc));
@@ -24,7 +24,7 @@ class GestureProp extends StatefulProp<GestureProp> {
 
   @override
   ChildBuilder getBuilder(ChildBuilder childBuilder) {
-    return () => GestureDetector(
+    return (c) => GestureDetector(
           key: key,
           behavior: behavior,
           dragStartBehavior: dragStartBehavior,
@@ -32,7 +32,7 @@ class GestureProp extends StatefulProp<GestureProp> {
           // TODO: Implement all the other 20+ callbacks for gestureDetector
           onTap: () => onTap?.call(),
           onLongPress: () => onLongPress?.call(),
-          child: childBuilder(),
+          child: childBuilder(c),
         );
   }
 

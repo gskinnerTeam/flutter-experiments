@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
+import 'package:flutter_experiments/stateful_props/stateful_props_manager.dart';
 
 /// ScrollController is pretty much fully immutable, so no updates to sync here.
 class ScrollProp extends StatefulProp<ScrollProp> {

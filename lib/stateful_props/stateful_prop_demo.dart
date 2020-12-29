@@ -20,9 +20,6 @@ import 'stateful_props_widget.dart';
  *  * All use in init()...
  *
  * TODO:
- * SizeProp
- *  * Need some sort of context-aware Timer/Delay...
-
  * TabController
  * StreamBuilder
 
@@ -71,7 +68,8 @@ class _StatefulPropsDemoState extends State<StatefulPropsDemo> with SingleTicker
   Widget build(BuildContext context) {
     Widget _makeBtn(int index) => FlatButton(
           onPressed: () => setState(() => _index = index),
-          child: Text(widgets[index].title),
+          child: Text(widgets[index].title,
+              style: TextStyle(fontWeight: _index == index ? FontWeight.bold : FontWeight.normal)),
           padding: EdgeInsets.symmetric(vertical: 40),
         );
     return RootRestorationScope(

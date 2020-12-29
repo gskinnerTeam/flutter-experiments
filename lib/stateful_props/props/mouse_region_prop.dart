@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-import '../stateful_properties.dart';
+import '../stateful_props_manager.dart';
 
 /// Wraps MouseRegions. Reports current position of mouse in
 /// both local and global coords. Also provides state like .isHovered,
@@ -56,7 +56,7 @@ class MouseRegionProp extends StatefulProp<MouseRegionProp> {
   @override
   ChildBuilder getBuilder(ChildBuilder childBuilder) {
     _viewSize = MediaQuery.of(context).size;
-    return () => MouseRegion(
+    return (c) => MouseRegion(
           key: key,
           cursor: cursor,
           opaque: opaque,
@@ -73,7 +73,7 @@ class MouseRegionProp extends StatefulProp<MouseRegionProp> {
             _handleMouseUpdate(isDown: true, position: m.position, localPosition: m.localPosition);
             onHover?.call(m);
           },
-          child: childBuilder(),
+          child: childBuilder(c),
         );
   }
 

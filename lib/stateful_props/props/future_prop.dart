@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_experiments/stateful_props/props/primitive_props.dart';
 
-import '../stateful_properties.dart';
+import '../stateful_props_manager.dart';
 
 //TODO:
 // * Add some sort of caching, make .future cached by default and replace(future)
@@ -50,15 +50,14 @@ class FutureProp<T> extends StatefulProp<FutureProp<T>> {
 
   @override
   ChildBuilder getBuilder(ChildBuilder childBuilder) {
-    return () => FutureBuilder<T>(
+    return (_) => FutureBuilder<T>(
           key: key,
           initialData: initialData,
           future: futureValue.value,
           builder: (BuildContext context, AsyncSnapshot<T> snapshot) {
             print("Build Future");
-            registerBuilderContext(context);
             _snapshot = snapshot;
-            return childBuilder();
+            return childBuilder(context);
           },
         );
   }

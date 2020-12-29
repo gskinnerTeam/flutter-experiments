@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/scheduler/ticker.dart';
 
-import '../stateful_properties.dart';
+import '../stateful_props_manager.dart';
 
 // TODO: Add Restoration to StatefulAnimationController
 // TODO: Create some sort of Animation version of this...
@@ -57,11 +57,11 @@ class AnimationProp extends StatefulProp<AnimationProp> implements TickerProvide
 
   @override
   void update(AnimationProp newProp) {
-    if (didChange(seconds, newProp.seconds)) {
+    if (compareValuesForChange(seconds, newProp.seconds)) {
       seconds = newProp.seconds;
       _controller.duration = seconds.duration;
     }
-    if (didChange(vsync, newProp.vsync)) {
+    if (compareValuesForChange(vsync, newProp.vsync)) {
       vsync = newProp.vsync;
       _controller.resync(vsync);
     }

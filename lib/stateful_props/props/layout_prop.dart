@@ -2,11 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../stateful_properties.dart';
+import '../stateful_props_manager.dart';
 
 class LayoutProp extends StatefulProp<LayoutProp> {
-  LayoutProp({this.key});
+  static Size defaultContextSize = Size(1, 1);
+
+  LayoutProp({this.key, this.measureContext = false}) {
+    _contextSize = defaultContextSize;
+  }
   Key key;
+  bool measureContext;
 
   //Helper methods
   BoxConstraints get constraints => _constraints;
@@ -15,13 +20,15 @@ class LayoutProp extends StatefulProp<LayoutProp> {
 
   //Internal state
   BoxConstraints _constraints = BoxConstraints();
-  Size _contextSize = Size(1, 1);
+  Size _contextSize;
 
   @override
   void init() {
-    // In order to get a proper measurement for size
-    scheduleMicrotask(() => setState(() {}));
-    super.init();
+    // In order to get a proper measurement for size we need to layout twice...
+    //TODO: Can we do something else here?
+    if (measureContext) {
+      scheduleMicrotask(() => setState(() {}));
+    }
   }
 
   @override
@@ -31,16 +38,17 @@ class LayoutProp extends StatefulProp<LayoutProp> {
 
   @override
   ChildBuilder getBuilder(ChildBuilder childBuilder) {
-    return () => LayoutBuilder(
+    return (c) => LayoutBuilder(
           key: key,
           builder: (context, constraints) {
             _constraints = constraints;
-            RenderBox rb = context.findRenderObject() as RenderBox;
-            if (rb?.hasSize ?? false) {
-              _contextSize = rb.size;
+            if (measureContext) {
+              RenderBox rb = context.findRenderObject() as RenderBox;
+              if (rb?.hasSize ?? false) {
+                _contextSize = rb.size;
+              }
             }
-            registerBuilderContext(context);
-            return childBuilder();
+            return childBuilder(context);
           },
         );
   }

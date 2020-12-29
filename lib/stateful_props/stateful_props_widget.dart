@@ -1,9 +1,7 @@
-// Combines PropsStatelessWidgetMixin + StatefulPropsWidget widget into a single `extends` call
+// Combines PropsStatelessWidgetMixin + PropsWidget widget into a single `extends` call
 import 'package:flutter/widgets.dart';
-import 'package:flutter_experiments/stateful_props/props/gesture_prop.dart';
-import 'package:flutter_experiments/stateful_props/props/primitive_props.dart';
 
-import 'stateful_properties.dart';
+import 'stateful_props.dart';
 
 class HelloStateless extends PropsWidget<HelloStateless> {
   HelloStateless(this.someValue, this.someText);
@@ -53,7 +51,7 @@ abstract class PropsWidget<W extends Widget> extends StatelessWidget {
 
   // Provide accessors which will allows all descendants to access these props
   int get buildCount => _manager.value.buildCount;
-  BuildContext get context => _manager.value.context;
+  BuildContext get context => _manager.value.getContext();
   void Function(VoidCallback) get setState => _manager.value.setState;
   bool get mounted => _manager.value.mounted;
 
@@ -95,7 +93,7 @@ abstract class PropsWidget<W extends Widget> extends StatelessWidget {
   @protected
   Widget build(BuildContext context) {
     // Each Prop can wrap the Widget's tree with 1 or more Widgets, they are called in top-down order.
-    return _manager.value.buildProps(() => buildWithProps(_manager.value.getContext()));
+    return _manager.value.buildProps((c) => buildWithProps(c));
   }
 }
 
@@ -123,7 +121,7 @@ class _PropsWidgetElement<W extends PropsWidget> extends StatelessElement {
   // Inject latest context, widget, setState into the manager
   // Wrap markNeedsBuild() in a setState like call which we'll expose to all PropWidget's.
   void _syncManager(W newWidget) {
-    _propsManager.context = this;
+    _propsManager.setContext(this);
     _propsManager.widget = newWidget;
     _propsManager.setState = (VoidCallback fn) {
       fn?.call();
