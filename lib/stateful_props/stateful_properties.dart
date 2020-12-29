@@ -14,7 +14,7 @@ extension DurationToSecondsExtension on Duration {
 // * calls lifecycle methods on each Prop (init, didUpdate, dispose)
 // * Requires setState, context and widget instances. Provided by [StatefulPropsMixin] or [StatefulPropsWidget]
 // * Injects `context` and `setState` into each Prop
-class StatefulPropsManager {
+class StatefulPropsManager<W extends Widget> {
   static bool logDuplicateRefWarnings = true;
 
   // List of all props that have been registered.
@@ -25,30 +25,35 @@ class StatefulPropsManager {
 
   // Widget/State Dependencies
   void Function(VoidCallback) setState;
-  BuildContext context;
-  Widget widget;
+  W widget;
   bool mounted = false;
   bool initPropsComplete = false;
 
+  BuildContext context;
+  BuildContext _lastBuilderContext;
+  BuildContext getContext() => _lastBuilderContext ?? context;
+  void registerBuildContext(BuildContext c) => _lastBuilderContext = c;
+
   // Calls addProp() and also injects the create method into the prop, so it can be called later.
-  T syncProp<T>(StatefulProp<dynamic> Function(BuildContext c, Widget w) create, [String restoreId]) {
+  T syncProp<T>(StatefulProp<dynamic> Function(BuildContext c, W w) create, [String restoreId]) {
     // Use the builder to create the first instance of the property.
-    StatefulProp<dynamic> prop = addProp(create(context, widget));
+    StatefulProp<dynamic> prop = addProp(create(getContext(), widget));
     // Inject the create builder so we can compare on didUpdateWidget
-    prop.create = create;
+    prop.create = create as StatefulProp<dynamic> Function(BuildContext, Widget);
     return prop as T;
   }
 
   // Add a new statefulProperty that we will keep track of.  This should only ever be called from StatefulWidget.initState()
   T addProp<T>(StatefulProp<dynamic> prop, [String restoreId]) {
-    assert(context != null, '''
+    assert(getContext() != null, '''
       Looks like you're trying to addProp/syncProp before the StatefulPropManger has been initialized. Make sure you've called initState.super() before calling add/syncProp. Or just override initProp() instead.''');
     // Inject common hooks needed for all Props
-    prop.context = context;
+    prop.context = getContext();
     prop.restoreId = restoreId;
     prop.setState = this.setState;
     prop.addProp = addProp;
     prop.syncProp = syncProp;
+    prop.registerBuilderContext = registerBuildContext;
     _values.add(prop);
     prop.init();
     return prop as T;
@@ -90,7 +95,7 @@ class StatefulPropsManager {
 
   // Wrap local build() call in additional "parent" build calls. Fire them all at the end.
   // This ensures the local build() call goes last and gets the latest state from the builders above it.
-  Widget buildProps(Widget Function() childBuild) {
+  Widget buildProps(ChildBuilder childBuild) {
     _values.forEach((prop) => childBuild = prop.getBuilder(childBuild));
     return childBuild();
   }
@@ -100,7 +105,7 @@ class StatefulPropsManager {
     _values.forEach((property) {
       // Sync any props that have a create method
       if (property.create != null) {
-        StatefulProp<dynamic> newProp = property.create(context, widget);
+        StatefulProp<dynamic> newProp = property.create(getContext(), widget);
         property.update(newProp);
       }
     });
@@ -122,6 +127,8 @@ class StatefulPropsManager {
 
 // Extend this base class to create your own StatefulProperty. Every method is optional, implement only what you need.
 // Available overrides are: init(), build(), update(), dispose(), restoreState()
+typedef ChildBuilder = Widget Function();
+
 abstract class StatefulProp<T> {
   /// ////////////////////////////////
   /// Life cycle
@@ -132,7 +139,7 @@ abstract class StatefulProp<T> {
 
   // Optional: Wrap builders Widgets here if needed, (like GestureDetector())
   @protected
-  Widget Function() getBuilder(Widget Function() childBuild) => childBuild;
+  ChildBuilder getBuilder(ChildBuilder childBuild) => childBuild;
 
   // Optional: Update internal state if the Widget has changed (like animation.duration)
   @protected
@@ -170,6 +177,10 @@ abstract class StatefulProp<T> {
   // The Add/Sync methods are injected from the manager so props can register sub-props allowing composition
   T Function<T>(StatefulProp<dynamic> prop, [String restoreId]) addProp;
   T Function<T>(StatefulProp<dynamic> Function(BuildContext c, Widget w) create, [String restoreId]) syncProp;
+
+  // Injected by state manager, each builder needs to call this so we can get the bottom-most callback
+  // TODO: There should be a better way by passing child contexts along back to the build call
+  void Function(BuildContext context) registerBuilderContext;
 
   /// Restoration
   // Injected when calling [ StatefulPropertyMixin.registerProperty(restoreId: "foo") ]

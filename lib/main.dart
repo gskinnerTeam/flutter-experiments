@@ -11,7 +11,8 @@ AppModel _appModel = AppModel();
 
 void main() {
   runApp(
-    // Use StatsFl to show an FPS counter in top-left
+    //DemoApp()
+    //Use StatsFl to show an FPS counter in top-left
     StatsFl(
       // Use Provider to pass the appModel down the tree
       child: ChangeNotifierProvider.value(
@@ -27,4 +28,29 @@ void main() {
       ),
     ),
   );
+}
+
+class DemoApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Provider<bool>.value(
+      value: false,
+      child: MaterialApp(
+        home: Scaffold(
+          body: SomeView(),
+        ),
+      ),
+    );
+  }
+}
+
+class SomeView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (lc, __) {
+      return Builder(
+        builder: (bc) => Text("${bc.watch<bool>()}"),
+      );
+    });
+  }
 }

@@ -5,11 +5,13 @@ import 'package:flutter_experiments/context_menu/context_menus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'app_model.dart';
+import 'stateful_props/stateful_prop_demo.dart';
 
 class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppModel model = context.watch();
+    String currentPage = model.currentPage;
     return ContextMenuRegion(
       contextMenu: AppContextMenu(
         srcUrl: model.currentSrcUrl,
@@ -17,7 +19,7 @@ class AppScaffold extends StatelessWidget {
       child: Scaffold(
         body: AnimatedSwitcher(
           duration: Duration(milliseconds: 100),
-          child: model.currentPage == null ? _HomeView() : _ExperimentView(),
+          child: currentPage == null ? _HomeView() : _ExperimentView(),
         ),
       ),
     );

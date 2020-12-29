@@ -7,15 +7,13 @@ import '../stateful_properties.dart';
 // TODO: Create some sort of Animation version of this...
 //     maybe, anim1.tween()
 class AnimationProp extends StatefulProp<AnimationProp> implements TickerProvider {
-  AnimationProp(
-    this.seconds, {
-    //TODO Add Begin/End or Lower/Upper bounds
-    this.vsync,
-    this.autoBuild = true,
-    this.autoStart = true,
-    this.onTick,
-    this.curve = Curves.linear,
-  });
+  AnimationProp(this.seconds,
+      {
+      //TODO Add Begin/End or Lower/Upper bounds
+      this.vsync,
+      this.autoBuild = true,
+      this.autoStart = true,
+      this.onTick});
   TickerProvider vsync;
   final bool autoBuild;
   final bool autoStart;
@@ -67,6 +65,7 @@ class AnimationProp extends StatefulProp<AnimationProp> implements TickerProvide
       vsync = newProp.vsync;
       _controller.resync(vsync);
     }
+    // Callbacks
     onTick = newProp.onTick ?? onTick;
   }
 

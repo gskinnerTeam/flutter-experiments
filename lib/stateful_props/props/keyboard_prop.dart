@@ -13,16 +13,26 @@ class KeyboardProp extends StatefulProp<KeyboardProp> {
     this.key,
     this.onPressed,
   });
-  final FocusNode focusNode;
-  final bool autofocus;
-  final bool includeSemantics;
-  final Key key;
+  FocusNode focusNode;
+  bool autofocus;
+  bool includeSemantics;
+  Key key;
 
   // Callbacks
   ValueChanged<RawKeyEvent> onPressed;
 
   @override
-  Widget Function() getBuilder(Widget Function() childBuilder) {
+  void update(KeyboardProp newProp) {
+    focusNode = newProp.focusNode;
+    autofocus = newProp.autofocus;
+    includeSemantics = newProp.includeSemantics;
+    key = newProp.key;
+    // Callbacks
+    onPressed = newProp.onPressed;
+  }
+
+  @override
+  ChildBuilder getBuilder(ChildBuilder childBuilder) {
     return () => RawKeyboardListener(
           key: key,
           focusNode: focusNode,

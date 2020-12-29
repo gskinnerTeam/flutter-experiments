@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_experiments/context_menu/context_menu_overlay.dart';
 import 'package:flutter_experiments/custom_widget/custom_widget.dart';
@@ -41,7 +43,9 @@ class AppRouterDelegate extends RouterDelegate<AppModel> with ChangeNotifier {
 
   @override
   // Redundant in this example, as we're letting the RouteInformationParser update appModel directly
-  Future<void> setNewRoutePath(AppModel deepLink) async {}
+  Future<void> setNewRoutePath(AppModel deepLink) async {
+    model.currentPage = deepLink.currentPage;
+  }
 }
 
 class AppRouteParser extends RouteInformationParser<AppModel> {
@@ -58,14 +62,13 @@ class AppRouteParser extends RouteInformationParser<AppModel> {
     // See if we have any location segments that we can parse into experiments
     String location = routeInformation.location;
     List<String> segments = location.split("/")..removeWhere((e) => e == "");
-    String experiment = StatefulPropsDemo.info.title;
+    String experiment = null;
     if (segments.length > 0) {
       // Assume first segment is an experiment name and validate it
       if (model.isValidExperimentName(segments[0])) {
         experiment = segments[0];
       }
     }
-    model.currentPage = experiment;
-    return model;
+    return AppModel()..currentPage = experiment;
   }
 }

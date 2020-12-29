@@ -21,8 +21,8 @@ class BasicBuilderExample extends PropsWidget {
     return Provider<int>.value(
       value: 0,
       child: ComparisonStack(
-        //classic: BasicBuilderClassic(),
-        //stateful: BasicBuilderStateful(),
+        classic: BasicBuilderClassic(),
+        stateful: BasicBuilderStateful(),
         stateless: BasicBuilderStateless(),
       ),
     );
@@ -50,23 +50,28 @@ class _BasicBuilderClassicState extends State<BasicBuilderClassic> {
   Future<int> _loadData() => Future.delayed(Duration(seconds: 1), () => Random().nextInt(999));
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext _) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() {
         _currentFuture = _loadData();
       }),
-      child: LayoutBuilder(builder: (_, constraints) {
+      child: LayoutBuilder(builder: (lc, constraints) {
         return FutureBuilder<int>(
             future: _currentFuture,
-            builder: (_, snapshot) {
+            builder: (fc, snapshot) {
               bool hasLoaded = snapshot?.connectionState != ConnectionState.waiting;
               int loadedValue = snapshot.data;
               double maxWidth = constraints.maxWidth;
-
-              return Container(
-                alignment: Alignment.center,
-                child: Text("${maxWidth}, future=${hasLoaded ? loadedValue : "Loading..."}"),
+              Size contextSize = Size(1, 1);
+              RenderBox rb = fc.findRenderObject() as RenderBox;
+              if (rb?.hasSize ?? false) {
+                contextSize = rb.size;
+              }
+              print("$this ${fc.watch<int>()}");
+              return _Content(
+                "parentWidth${maxWidth}, contextWith${contextSize.width}}",
+                "future=${hasLoaded ? loadedValue : "Loading..."}",
               );
             });
       }),
@@ -101,10 +106,10 @@ class _BasicBuilderStatefulState extends State<BasicBuilderStateful> with Statef
     bool hasLoaded = !someFuture.isWaiting;
     int loadedValue = someFuture.value;
     double maxWidth = layout.constraints.maxWidth;
-    //print(context.watch<int>());
-    return Container(
-      alignment: Alignment.center,
-      child: Text("${maxWidth}, future=${hasLoaded ? loadedValue : "Loading..."}"),
+    print("$this ${context.watch<int>()}");
+    return _Content(
+      "parentWidth${maxWidth}, contextWith${layout.contextSize.width}}",
+      "future=${hasLoaded ? loadedValue : "Loading..."}",
     );
   }
 }
@@ -117,11 +122,14 @@ class BasicBuilderStateless extends PropsWidget {
   static const Ref<FutureProp<int>> _someFuture = Ref();
   static const Ref<TapProp> _tap = Ref();
 
+  LayoutProp get layout => use(_layout);
+  FutureProp<int> get someFuture => use(_someFuture);
+
   @override
   void initProps() {
     addProp(_layout, LayoutProp());
     addProp(_someFuture, FutureProp(_loadData()));
-    addProp(_tap, TapProp(() => use(_someFuture).future = _loadData()));
+    addProp(_tap, TapProp(() => someFuture.future = _loadData()));
   }
 
   // Wait 1 second, return random Integer
@@ -129,14 +137,24 @@ class BasicBuilderStateless extends PropsWidget {
 
   @override
   Widget buildWithProps(BuildContext context) {
-    FutureProp<int> future = use(_someFuture);
-    bool hasLoaded = !future.isWaiting;
-    int loadedValue = future.value;
-    double maxWidth = use(_layout).constraints.maxWidth;
-    print(context.read<int>());
-    return Container(
-      alignment: Alignment.center,
-      child: Text("${maxWidth}, future=${hasLoaded ? loadedValue : "Loading..."}"),
+    bool hasLoaded = !someFuture.isWaiting;
+    int loadedValue = someFuture.value;
+    double maxWidth = layout.constraints.maxWidth;
+    print("$this ${context.watch<int>()}");
+    return _Content(
+      "parentWidth${maxWidth}, contextWith${layout.contextSize.width}}",
+      "future=${hasLoaded ? loadedValue : "Loading..."}",
     );
   }
+}
+
+/// ///////////////////////////////
+/// Shared
+Widget _Content(String _result1, String _result2) {
+  return Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [Text(_result1), Text(_result2)],
+    ),
+  );
 }

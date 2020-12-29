@@ -33,8 +33,8 @@ class _Mutable<T> {
 // Used to define a static lookup key inside of PropWidgets
 // Similar in usage to an enum: `prop1 = propsByKey[MyView.prop1]`
 // IMPORTANT: This should always be used in a Static context or it will not work.
-// Do: static PropKey p = PropKey();
-// Dont: final PropKey p = PropKey();
+// DO: static final Ref someProp = Ref();
+// DON'T: final Ref someProp = Ref(); // <-- Props will lose state each time Widget rebuilds
 class Ref<T extends StatefulProp<dynamic>> {
   const Ref();
 }
@@ -95,7 +95,7 @@ abstract class PropsWidget<W extends Widget> extends StatelessWidget {
   @protected
   Widget build(BuildContext context) {
     // Each Prop can wrap the Widget's tree with 1 or more Widgets, they are called in top-down order.
-    return _manager.value.buildProps(() => buildWithProps(context));
+    return _manager.value.buildProps(() => buildWithProps(_manager.value.getContext()));
   }
 }
 
@@ -136,6 +136,12 @@ class _PropsWidgetElement<W extends PropsWidget> extends StatelessElement {
   // Track buildCount as a quality-of-life improvement for devs.
   @override
   Widget build() {
+    // We have to initialize Props in build to avoid issues with Provider.
+    // Provider requires a context have an owner, but we don't have an owner until we call super.mount()
+    // If we call super.mount(), build() gets called. This means we're unable to call initProps() from the mount() override.
+    if (_propsManager.buildCount == 0) {
+      (_propsManager.widget as PropsWidget).initProps();
+    }
     _propsManager.buildCount++;
     return super.build();
   }
@@ -143,9 +149,8 @@ class _PropsWidgetElement<W extends PropsWidget> extends StatelessElement {
   // Track mounted as a quality-of-life improvement for devs. Useful when checking Futures that may outlive their context.
   @override
   void mount(Element parent, dynamic newSlot) {
-    (_propsManager.widget as PropsWidget).initProps();
-    super.mount(parent, newSlot);
     _propsManager.mounted = true;
+    super.mount(parent, newSlot);
   }
 
   // Dispose all props automatically and give the widget a chance to do any extra disposal (rare)

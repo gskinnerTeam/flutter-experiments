@@ -25,7 +25,12 @@ class FutureProp<T> extends StatefulProp<FutureProp<T>> {
   bool get isWaiting => _snapshot?.connectionState == ConnectionState.waiting;
 
   Future<T> get future => futureValue?.value;
-  set future(Future<T> value) => futureValue?.value = value;
+  set future(Future<T> value) {
+    if (isWaiting) return;
+    futureValue.value = value;
+  }
+
+  void replace(Future<T> value) => futureValue.value = value;
 
   //Internal State
   AsyncSnapshot<T> _snapshot;
@@ -35,17 +40,23 @@ class FutureProp<T> extends StatefulProp<FutureProp<T>> {
   void init() {
     // Use a ValueProp to handle our 'did-change' check
     futureValue = addProp?.call(ValueProp(initialFuture));
-    print("Init Future");
   }
 
   @override
-  Widget Function() getBuilder(Widget Function() childBuilder) {
+  void update(FutureProp<T> newProp) {
+    key = newProp.key;
+    initialData = newProp.initialData;
+  }
+
+  @override
+  ChildBuilder getBuilder(ChildBuilder childBuilder) {
     return () => FutureBuilder<T>(
-          future: futureValue.value,
           key: key,
           initialData: initialData,
+          future: futureValue.value,
           builder: (BuildContext context, AsyncSnapshot<T> snapshot) {
             print("Build Future");
+            registerBuilderContext(context);
             _snapshot = snapshot;
             return childBuilder();
           },

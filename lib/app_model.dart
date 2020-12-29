@@ -5,14 +5,12 @@ import 'package:flutter_experiments/custom_widget/custom_widget.dart';
 import 'package:flutter_experiments/flutter_hooks/flutter_hooks_demo.dart';
 import 'package:flutter_experiments/restoration_demo/restoration_demo.dart';
 import 'package:flutter_experiments/tooltips/tooltips_demo.dart';
-import 'package:tuple/tuple.dart';
 
 import 'context_menu/context_menu_experiment.dart';
 import 'keyboard_listener/keyboard_listener_app.dart';
 import 'nav_examples/imperative_nav_tests.dart';
 import 'optimized_drag_stack/optimized_drag_stack.dart';
 import 'stateful_props/stateful_prop_demo.dart';
-import 'stateful_props/stateful_properties.dart';
 import 'travel_card_opening/travel_cards_demo.dart';
 
 class PageInfo {
@@ -27,7 +25,8 @@ class AppModel extends ChangeNotifier {
   static String kVersion = "0.1.2";
   String _currentPage;
 
-  String get currentPage => _currentPage;
+  //Debug: Override default page to skip home
+  String get currentPage => _currentPage ?? StatefulPropsDemo.info.title;
   set currentPage(String currentExperiment) {
     _currentPage = currentExperiment;
     notifyListeners();

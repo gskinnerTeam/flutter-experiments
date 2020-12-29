@@ -1,11 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_experiments/stateful_props/stateful_properties.dart';
 
+//TODO: Could we allow you to change the keepPage or viewPortFraction by re-creating the controller internally?
 class PageControllerProp extends StatefulProp<PageControllerProp> {
   PageControllerProp({this.initialPage: 0, this.keepPage: true, this.viewportFraction: 1.0, this.onChanged});
   final int initialPage;
-  bool keepPage;
-  double viewportFraction;
+  final bool keepPage;
+  final double viewportFraction;
 
   // Callbacks
   void Function(PageControllerProp prop) onChanged;

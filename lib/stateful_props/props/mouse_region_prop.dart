@@ -11,12 +11,12 @@ import '../stateful_properties.dart';
 /// TODO: Would be nice if this also stored local-relative position. Would need to use LayoutBuilder or `context.findRenderBox()` I think?
 class MouseRegionProp extends StatefulProp<MouseRegionProp> {
   MouseRegionProp({
+    this.cursor = MouseCursor.defer,
+    this.opaque = true,
     this.key,
     this.onEnter,
     this.onExit,
     this.onHover,
-    this.cursor = MouseCursor.defer,
-    this.opaque = true,
   });
   Key key;
   MouseCursor cursor;
@@ -43,7 +43,18 @@ class MouseRegionProp extends StatefulProp<MouseRegionProp> {
   bool _isHovered = false;
 
   @override
-  Widget Function() getBuilder(Widget Function() childBuilder) {
+  void update(MouseRegionProp newProp) {
+    key = newProp.key;
+    cursor = newProp.cursor;
+    opaque = newProp.opaque;
+    // Callbacks
+    onHover = newProp.onHover;
+    onEnter = newProp.onEnter;
+    onExit = newProp.onExit;
+  }
+
+  @override
+  ChildBuilder getBuilder(ChildBuilder childBuilder) {
     _viewSize = MediaQuery.of(context).size;
     return () => MouseRegion(
           key: key,

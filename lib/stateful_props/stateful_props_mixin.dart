@@ -3,9 +3,10 @@
 import 'package:flutter/widgets.dart';
 
 import 'stateful_properties.dart';
+export 'stateful_properties.dart';
 
 mixin StatefulPropsMixin<W extends StatefulWidget> on State<W> {
-  StatefulPropsManager _propsManager = StatefulPropsManager();
+  StatefulPropsManager _propsManager = StatefulPropsManager<W>();
 
   @override
   @protected
@@ -30,24 +31,25 @@ mixin StatefulPropsMixin<W extends StatefulWidget> on State<W> {
 
   /// ///////////////////////////////////////
   /// Register Props
-  T syncProp<T>(StatefulProp<dynamic> Function(BuildContext c, Widget w) create, [String restoreId]) {
-    return _propsManager.syncProp(create, restoreId);
+  T syncProp<T>(StatefulProp<dynamic> Function(BuildContext c, W w) create, [String restoreId]) {
+    //Because we can't cast generics of sub-classes, we have to do this little closure wrap-trick
+    StatefulProp<dynamic> Function(BuildContext c, Widget w) callback = (c, w) => create(c, w as W);
+    return _propsManager.syncProp(callback, restoreId);
   }
 
   T addProp<T>(StatefulProp<dynamic> prop, [String restoreId]) {
     return _propsManager.addProp(prop, restoreId);
   }
 
-  /// TODO: Would be nice if we could avoid renaming build()...
-  /// Could use a build() + PropBuilder(builder: (){}), but that adds nesting, ambiguity and boilerplate.
+  /// TODO: Would be nice if we could avoid renaming build()...Could use a build() + PropBuilder(builder: (){}), but that adds nesting, ambiguity and boilerplate.
   /// ///////////////////////////////////////
   /// Lifecycle Hooks, proxy Stateful Lifecycle into the Manager
   /// Build: Need to replace the main build function to wrap any helper Widgets/Builders used by the StatefulProps.
   @override
   @protected
-  Widget build(BuildContext context) {
+  Widget build(BuildContext _) {
     // Each Prop can wrap the Widget's tree with 1 or more Widgets, they are called in top-down order.
-    return _propsManager.buildProps(() => buildWithProps(context));
+    return _propsManager.buildProps(() => buildWithProps(_propsManager.getContext()));
   }
 
   @override

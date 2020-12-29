@@ -23,7 +23,7 @@ class GestureProp extends StatefulProp<GestureProp> {
   void Function() onLongPress;
 
   @override
-  Widget Function() getBuilder(Widget Function() childBuilder) {
+  ChildBuilder getBuilder(ChildBuilder childBuilder) {
     return () => GestureDetector(
           key: key,
           behavior: behavior,
@@ -38,6 +38,11 @@ class GestureProp extends StatefulProp<GestureProp> {
 
   @override
   void update(GestureProp newProp) {
+    behavior = newProp.behavior;
+    dragStartBehavior = newProp.dragStartBehavior;
+    excludeFromSemantics = newProp.excludeFromSemantics;
+    key = newProp.key;
+    // Callbacks
     onTap = newProp.onTap;
     onLongPress = newProp.onLongPress;
   }
@@ -53,7 +58,7 @@ class TapProp extends GestureProp {
   TapProp(VoidCallback onTap) : super(onTap: onTap);
 
   @override
-  Widget Function() getBuilder(Widget Function() childBuilder) {
+  ChildBuilder getBuilder(ChildBuilder childBuilder) {
     return super.getBuilder(childBuilder);
   }
 }
